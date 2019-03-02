@@ -1,6 +1,8 @@
 package TugasAkhir.penjadwalan.service;
 
+import TugasAkhir.penjadwalan.model.Matakuliah;
 import TugasAkhir.penjadwalan.model.Partikel;
+import TugasAkhir.penjadwalan.repository.MatakuliahRepository;
 import TugasAkhir.penjadwalan.repository.PartikelRepository;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +12,7 @@ import java.util.List;
 @Service
 public class PartikelService {
     private PartikelRepository partikelRepository;
+    private MatakuliahRepository matakuliahRepository;
 
     public PartikelService(PartikelRepository partikelRepository) {
         this.partikelRepository = partikelRepository;

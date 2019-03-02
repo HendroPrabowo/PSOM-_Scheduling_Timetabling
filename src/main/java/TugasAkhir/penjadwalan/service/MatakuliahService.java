@@ -33,8 +33,9 @@ public class MatakuliahService {
         matakuliahRepository.deleteById(id);
     }
 
-    public String findJenisMatakuliah(int id){
-        return matakuliahRepository.findById(id).get().getJenis();
-
+    public String findJenisMatakuliah(int idmatakuliah){
+        Matakuliah matakuliah = matakuliahRepository.findById(idmatakuliah).get();
+        String jenis = matakuliah.getJenis();
+        return jenis;
     }
 }

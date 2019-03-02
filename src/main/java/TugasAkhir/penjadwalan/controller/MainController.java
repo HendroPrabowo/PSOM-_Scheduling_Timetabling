@@ -262,6 +262,7 @@ public class MainController {
         List<Matakuliah> matakuliahs = matakuliahService.findAll();
 
         cekNilaiFitness(partikels, matakuliahs);
+        System.out.println("cekNilaiFitness Selesai");
         return "kosong";
     }
 
@@ -313,15 +314,18 @@ public class MainController {
             double nilaiFitness = 0, pinalti = 0, pinaltiDosen = 0, pinaltiAsistenDosen = 0;
             String keterangan = null;
 
+            // Partikel1 == i
+            Partikel partikel1 = partikels.get(i);
+            Matakuliah matakuliah1 = matakuliahService.findOne(partikel1.getIdmatakuliah());
+
             for(int j=0;j<partikels.size();j++){
                 if(i==j || j==i){
                     continue;
                 }
 
-                // Partikel1 == i
                 // Partikel2 == j
-                Partikel partikel1 = partikels.get(i);
                 Partikel partikel2 = partikels.get(j);
+                Matakuliah matakuliah2 = matakuliahService.findOne(partikel2.getIdmatakuliah());
 
                 // Pengecekan partikel, matakuliah yang sama tidak bisa dialokasikan pada hari dan sesi yang sama
                 if(
@@ -329,10 +333,8 @@ public class MainController {
                         Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
                         Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi())
                 ){
-//                    System.out.println(partikels.get(i).getNama()+" == "+partikels.get(j).getNama());
-//                    sama.add(partikels.get(i).getNama()+" == "+partikels.get(j).getNama());
                     keterangan = partikel1.getKeterangan();
-                    keterangan = keterangan.concat("C1 "+partikel2.getId());
+                    keterangan = keterangan.concat(" C1:"+partikel2.getId());
                     partikel1.setKeterangan(keterangan);
                     partikelService.save(partikel1);
                     pinalti++;
@@ -346,56 +348,76 @@ public class MainController {
                         Math.floor(partikel1.getPosisiruangan()) == Math.floor(partikel2.getPosisiruangan())
                 ){
                     keterangan = partikel1.getKeterangan();
-                    keterangan = keterangan.concat("C2 "+partikel2.getId());
+                    keterangan = keterangan.concat(" C2:"+partikel2.getId());
                     partikel1.setKeterangan(keterangan);
                     partikelService.save(partikel1);
                     pinalti++;
                 }
 
-//                String jenis = matakuliahService.findJenisMatakuliah(partikel1.getId());
-//                if(jenis == "T"){
-//                    //Pengecekan pertikel, matakuliah berbeda, hari sesi sama dicek bentrok antar dosen dan asisten dosen
-//                    if(
-//                            partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
-//                            partikel1.getPosisihari() == partikel2.getPosisihari() &&
-//                            partikel1.getPosisisesi() == partikel2.getPosisisesi() &&
-//                            partikel1.getDosen1() == partikel2.getDosen1()
-//                    ){
-//                        // Dosen 1
-//                        if(partikel1.getDosen1().length() != 0)
-//                            pinaltiDosen = cekPinaltiDosen(partikel1.getDosen1(), partikel2, pinaltiDosen);
-//                        // Dosen 2
-//                        if(partikel1.getDosen2().length() != 0)
-//                            pinaltiDosen = cekPinaltiDosen(partikel1.getDosen2(), partikel2, pinaltiDosen);
-//                        // Dosen 3
-//                        if(partikel1.getDosen3().length() != 0)
-//                            pinaltiDosen = cekPinaltiDosen(partikel1.getDosen3(), partikel2, pinaltiDosen);
-//                        // Dosen 4
-//                        if(partikel1.getDosen4().length() != 0)
-//                            pinaltiDosen = cekPinaltiDosen(partikel1.getDosen4(), partikel2, pinaltiDosen);
-//                    }
-//                }
-//                if(jenis == "P"){
-//                    if(partikel1.getAsistenDonsen1().length() != 0 && partikel2.getAsistenDonsen1().length() != 0){
-//                        // Asisten Dosen 1
-//                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(partikel1.getAsistenDonsen1(), partikel2, pinaltiAsistenDosen);
-//                        // Asisten Dosen 2
-//                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(partikel1.getAsistenDonsen2(), partikel2, pinaltiAsistenDosen);
-//                        // Asisten Dosen 3
-//                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(partikel1.getAsistenDonsen3(), partikel2, pinaltiAsistenDosen);
-//                    }
-//                }
+                String jenis = matakuliahService.findJenisMatakuliah(partikel1.getIdmatakuliah());
+                //Pengecekan partikel, matakuliah berbeda, hari sesi sama dicek bentrok antar dosen dan asisten dosen
+                if(
+                        partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
+                        Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
+                        Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi())
+                ){
+                    if(jenis.equals("T")){
+                        // Dosen 1
+                        if(matakuliah1.getDosen1().length() != 0)
+                            pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen1(), matakuliah2, pinaltiDosen);
+                        // Dosen 2
+                        if(matakuliah1.getDosen2().length() != 0)
+                            pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen2(), matakuliah2, pinaltiDosen);
+                        // Dosen 3
+                        if(matakuliah1.getDosen3().length() != 0)
+                            pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen3(), matakuliah2, pinaltiDosen);
+                        // Dosen 4
+                        if(matakuliah1.getDosen4().length() != 0)
+                            pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen4(), matakuliah2, pinaltiDosen);
+                    }
+                    if(jenis.equals("P")){
+                        // Asisten Dosen 1
+                        if(matakuliah1.getAsistendosen1().length() != 0)
+                            pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen1(), matakuliah2, pinaltiAsistenDosen);
+                        // Asisten Dosen 2
+                        if(matakuliah1.getAsistendosen2().length() != 0)
+                            pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen2(), matakuliah2, pinaltiAsistenDosen);
+                        // Asisten Dosen 3
+                        if(matakuliah1.getAsistendosen3().length() != 0)
+                            pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen3(), matakuliah2, pinaltiAsistenDosen);
+                    }
+                }
 
-                // Pengecekan partike untuk sesi ibadah
+                // Pengecekan partikel untuk sesi ibadah
                 if(Math.floor(partikel1.getPosisihari()) == 5 && Math.floor(partikel1.getPosisisesi()) == 5){
                     keterangan = partikel1.getKeterangan();
-                    keterangan = keterangan.concat("C3");
+                    keterangan = keterangan.concat(" C3");
                     partikel1.setKeterangan(keterangan);
                     partikelService.save(partikel1);
                     pinalti++;
-                    System.out.println(partikel1.getNama()+" TIdak bisa karena ibadah");
+                }
+
+                // Perhitungan pinalti
+                if(pinaltiDosen!=0){
+                    keterangan = partikels.get(i).getKeterangan();
+                    keterangan = keterangan.concat(" C5:"+partikel2.getId());
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikels.get(i));
+                    pinalti++;
+                }
+                if(pinaltiAsistenDosen != 0){
+                    keterangan = partikel1.getKeterangan();
+                    keterangan = keterangan.concat(" C6:"+partikel2.getId());
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikel1);
+                    pinalti++;
                 }
             }
+
+            // Perhitungan nilai fitness dan simpan nilai fitness
+            nilaiFitness = (1.0)/(1.0+pinalti);
+            partikel1.setNilaifitness(nilaiFitness);
+            partikelService.save(partikel1);
         }
     }
 
@@ -406,53 +428,58 @@ public class MainController {
         }
     }
 
-//    public double cekPinaltiDosen(String dosen, Partikel partikel2, double pinaltiDosen){
-//        for(int i=1;i<5;i++){
-//            if(i == 1){
-//                if(partikel2.getDosen1().length() != 0){
-//                    if(dosen == partikel2.getDosen1())
-//                        pinaltiDosen++;
-//                }
-//            }
-//            else if(i == 2){
-//                if(partikel2.getDosen2().length() != 0){
-//                    if(dosen == partikel2.getDosen2())
-//                        pinaltiDosen++;
-//                }
-//            }
-//            else if(i == 3){
-//                if(partikel2.getDosen3().length() != 0){
-//                    if(dosen == partikel2.getDosen3())
-//                        pinaltiDosen++;
-//                }
-//            }
-//            else if(i == 4){
-//                if(partikel2.getDosen4().length() != 0){
-//                    if(dosen == partikel2.getDosen4())
-//                        pinaltiDosen++;
-//                }
-//            }
-//        }
-//
-//        return pinaltiDosen;
-//    }
-//
-//    public double cekPinaltiAsistenDosen(String asistenDosen, Partikel partikel, double pinaltiAsistenDosen){
-//        for(int i=3;i<4;i++){
-//            if(i == 1){
-//                if(asistenDosen == partikel.getAsistenDonsen1())
-//                    pinaltiAsistenDosen++;
-//            }
-//            else if(i == 2){
-//                if(asistenDosen == partikel.getAsistenDonsen2())
-//                    pinaltiAsistenDosen++;
-//            }
-//            else if(i == 3){
-//                if(asistenDosen == partikel.getAsistenDonsen3())
-//                    pinaltiAsistenDosen++;
-//            }
-//        }
-//
-//        return pinaltiAsistenDosen;
-//    }
+    public double cekPinaltiDosen(String dosen, Matakuliah matakuliah, double pinaltiDosen){
+        String dosen1 = matakuliah.getDosen1(), dosen2 = matakuliah.getDosen2(), dosen3 = matakuliah.getDosen3(), dosen4 = matakuliah.getDosen4();
+        for(int i=1;i<5;i++){
+            if(i == 1){
+                if(dosen1.length() != 0){
+                    if(dosen.equals(dosen1))
+                        pinaltiDosen++;
+                }
+            }
+            else if(i == 2){
+                if(dosen2.length() != 0){
+                    if(dosen.equals(dosen2))
+                        pinaltiDosen++;
+                }
+            }
+            else if(i == 3){
+                if(dosen3.length() != 0){
+                    if(dosen.equals(dosen3))
+                        pinaltiDosen++;
+                }
+            }
+            else if(i == 4){
+                if(dosen4.length() != 0){
+                    if(dosen.equals(dosen4))
+                        pinaltiDosen++;
+                }
+            }
+        }
+
+        return pinaltiDosen;
+    }
+
+    public double cekPinaltiAsistenDosen(String asistenDosen, Matakuliah matakuliah, double pinaltiAsistenDosen){
+        String asistenDosen1 = matakuliah.getAsistendosen1(), asistenDosen2 = matakuliah.getAsistendosen2(), asistenDosen3 = matakuliah.getAsistendosen3();
+        for(int i=1;i<4;i++){
+            if(i == 1){
+                if(matakuliah.getAsistendosen1().length() != 0)
+                    if(asistenDosen.equals(asistenDosen1))
+                        pinaltiAsistenDosen++;
+            }
+            else if(i == 2){
+                if(matakuliah.getAsistendosen2().length() != 0)
+                    if(asistenDosen.equals(asistenDosen2))
+                        pinaltiAsistenDosen++;
+            }
+            else if(i == 3){
+                if(matakuliah.getAsistendosen3().length() != 0)
+                    if(asistenDosen.equals(asistenDosen3))
+                        pinaltiAsistenDosen++;
+            }
+        }
+
+        return pinaltiAsistenDosen;
+    }
 }
