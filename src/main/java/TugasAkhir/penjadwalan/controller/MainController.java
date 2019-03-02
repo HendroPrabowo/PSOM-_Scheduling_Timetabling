@@ -246,12 +246,11 @@ public class MainController {
                 iterator++;
             }
         }
-        iterator++;
 
         List<Partikel> partikels = partikelService.findAll();
-        matakuliahs = matakuliahService.findAll();
 
         cekNilaiFitness(partikels, matakuliahs);
+        updateGlobalBest(partikels);
 
         return "generate-jadwal";
     }
@@ -492,5 +491,18 @@ public class MainController {
         }
 
         return pinaltiAsistenDosen;
+    }
+
+    public void updateGlobalBest(List<Partikel> partikels){
+        double min = 1000;
+        for(Partikel partikel : partikels){
+            if(partikel.getNilaifitness() <= min)
+                min = partikel.getNilaifitness();
+        }
+        for(Partikel partikel : partikels){
+            partikel.setNilaiglobalbest(min);
+            partikelService.save(partikel);
+
+        }
     }
 }
