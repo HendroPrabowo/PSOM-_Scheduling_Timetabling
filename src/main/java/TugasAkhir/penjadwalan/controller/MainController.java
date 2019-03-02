@@ -1,0 +1,458 @@
+package TugasAkhir.penjadwalan.controller;
+
+import TugasAkhir.penjadwalan.model.*;
+import TugasAkhir.penjadwalan.service.*;
+import TugasAkhir.penjadwalan.spreadsheet.ApachePOIExcelWrite;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Controller
+public class MainController {
+    @Autowired
+    private RuanganService ruanganService;
+    @Autowired
+    private DosenService dosenService;
+    @Autowired
+    private KelasService kelasService;
+    @Autowired
+    private MatakuliahService matakuliahService;
+    @Autowired
+    private PartikelService partikelService;
+
+    @GetMapping("/")
+    public String index(){
+        return "index";
+    }
+
+    /*
+    Ruangan
+     */
+    @GetMapping("/ruangan")
+    public String ruangan(ModelMap model){
+        List<Ruangan> ruangans = new ArrayList<>();
+        ruangans = ruanganService.findAll();
+
+        model.put("ruangans", ruangans);
+        return "ruangan";
+    }
+
+    @GetMapping("/ruangan-add")
+    public String ruanganAdd(){
+        return "ruangan-form";
+    }
+
+    @PostMapping("/ruangan-save")
+    public String ruanganSave(@ModelAttribute Ruangan ruangan, BindingResult result){
+        ruanganService.save(ruangan);
+
+        return "redirect:/ruangan";
+    }
+
+    @GetMapping("/ruangan-update")
+    public String ruanganUpdate(@RequestParam int id, ModelMap model){
+        Ruangan ruangan = ruanganService.findOne(id);
+        model.put("ruangan", ruangan);
+
+        return "ruangan-update";
+    }
+
+    @PostMapping("/ruangan-save-update")
+    public String ruanganSaveUpdate(@ModelAttribute Ruangan ruangan, BindingResult result){
+        Ruangan ruangan1 = ruanganService.findOne(ruangan.getId());
+
+        return "redirect:/ruangan";
+    }
+
+    @GetMapping("/ruangan-delete")
+    public String ruanganDelete(@RequestParam int id){
+        ruanganService.delete(id);
+
+        return "redirect:/ruangan";
+    }
+
+    /*
+    Dosen
+     */
+    @GetMapping("/dosen")
+    public String dosen(ModelMap model){
+        List<Dosen> dosens = new ArrayList<>();
+        dosens = dosenService.findAll();
+        model.put("dosens", dosens);
+        return "dosen";
+    }
+
+    @GetMapping("/dosen-add")
+    public String dosenAdd(){
+        return "dosen-form";
+    }
+
+    @PostMapping("/dosen-save")
+    public String dosenSave(@ModelAttribute Dosen dosen, BindingResult result){
+        dosenService.save(dosen);
+
+        return "redirect:/dosen";
+    }
+
+    @GetMapping("/dosen-delete")
+    public String dosenDelete(@RequestParam int id){
+        dosenService.delete(id);
+
+        return "redirect:/dosen";
+    }
+
+    @GetMapping("/dosen-update")
+    public String dosenUpdate(@RequestParam int id, ModelMap model){
+        Dosen dosen = dosenService.findOne(id);
+        model.put("dosen", dosen);
+
+        return "dosen-update";
+    }
+
+    /*
+   Kelas
+    */
+    @GetMapping("/kelas")
+    public String kelas(ModelMap model){
+        List<Kelas> kelass = new ArrayList<>();
+        kelass = kelasService.findAll();
+        model.put("kelass", kelass);
+        return "kelas";
+    }
+
+    @GetMapping("/kelas-add")
+    public String kelasAdd(){
+        return "kelas-form";
+    }
+
+    @PostMapping("/kelas-save")
+    public String kelasSave(@ModelAttribute Kelas kelas, BindingResult result){
+        kelasService.save(kelas);
+
+        return "redirect:/kelas";
+    }
+
+    @GetMapping("/kelas-delete")
+    public String kelasDelete(@RequestParam int id){
+        kelasService.delete(id);
+
+        return "redirect:/kelas";
+    }
+
+    @GetMapping("/kelas-update")
+    public String kelasUpdate(@RequestParam int id, ModelMap model){
+        Kelas kelas = kelasService.findOne(id);
+        model.put("kelas", kelas);
+
+        return "kelas-update";
+    }
+
+    /**
+     * Matakuliah
+     */
+    @GetMapping("/matakuliah")
+    public String matakuliah(ModelMap model){
+        List<Matakuliah> matakuliahs = new ArrayList<>();
+        matakuliahs = matakuliahService.findAll();
+        model.put("matakuliahs", matakuliahs);
+
+        return "matakuliah";
+    }
+
+    @GetMapping("/matakuliah-add")
+    public String matakuliahAdd(){
+        return "matakuliah-form";
+    }
+
+    @PostMapping("/matakuliah-save")
+    public String matakuliahSave(@ModelAttribute Matakuliah matakuliah, BindingResult result){
+        matakuliahService.save(matakuliah);
+
+        return "redirect:/matakuliah";
+    }
+
+    @GetMapping("/matakuliah-delete")
+    public String matakuliahDelete(@RequestParam int id){
+        matakuliahService.delete(id);
+
+        return "redirect:/matakuliah";
+    }
+
+    @GetMapping("/matakuliah-update")
+    public String matakuliahUpdate(@RequestParam int id, ModelMap model){
+        Matakuliah matakuliah = matakuliahService.findOne(id);
+        model.put("matakuliah", matakuliah);
+
+        return "matakuliah-update";
+    }
+
+    @GetMapping("/halaman-jadwal")
+    public String halamanJadwal(ModelMap model){
+        List<Matakuliah> matakuliahs = matakuliahService.findAll();
+        model.put("matakuliahs", matakuliahs);
+
+        return "halaman-jadwal";
+    }
+
+    @GetMapping("/generate-jadwal")
+    public String generatePenjadwalan(ModelMap model){
+        long startTime = System.nanoTime();
+
+        // Inisialisasi variable awal
+        int nilaiPosisi = 1, iterator = 1;
+        double nilaiRandom = 0;
+
+        List<Matakuliah> matakuliahs = matakuliahService.findAll();
+        List<Ruangan> ruangans = ruanganService.findAll();
+
+        // Hapus dulu smua partikel yang lama
+        partikelService.deleteAll();
+
+        // Inisialisasi posisi ruangan
+        for(Ruangan ruangan : ruangans){
+            ruangan.setPosisi(nilaiPosisi);
+            ruanganService.save(ruangan);
+            nilaiPosisi++;
+        }
+
+        for(Matakuliah matakuliah : matakuliahs){
+            for(int i=0;i<matakuliah.getJumlahsks();i++){
+                Partikel partikel = new Partikel(matakuliah.getId(), "partikel"+iterator);
+
+                // Inisialisasi nilai hari awal
+                nilaiRandom = generateNilaiPosisiHari();
+                partikel.setPosisihari(nilaiRandom);
+                partikel.setKecepatanhari(nilaiRandom);
+
+                // Inisialisasi nilai sesi awal
+                nilaiRandom = generateNilaiPosisiSesi();
+                partikel.setPosisisesi(nilaiRandom);
+                partikel.setKecepatansesi(nilaiRandom);
+
+                // Inisialisasi nilai ruangan awal
+                nilaiRandom = generateNilaiPosisiRuangan(ruangans.size());
+                partikel.setPosisiruangan(nilaiRandom);
+                partikel.setKecepatanruangan(nilaiRandom);
+
+                // Inisialisasi local best
+                partikel.setNilailocalbest(partikel.getPosisihari());
+                partikelService.save(partikel);
+                iterator++;
+            }
+        }
+        iterator++;
+
+        List<Partikel> partikels = partikelService.findAll();
+        matakuliahs = matakuliahService.findAll();
+        ruangans = ruanganService.findAll();
+
+        cekNilaiFitness(partikels, matakuliahs);
+
+        return "generate-jadwal";
+    }
+
+    @GetMapping("/testing")
+    public String testing(){
+        List<Partikel> partikels = partikelService.findAll();
+        List<Matakuliah> matakuliahs = matakuliahService.findAll();
+
+        cekNilaiFitness(partikels, matakuliahs);
+        return "kosong";
+    }
+
+    @GetMapping("/test-excel")
+    public String textExcel(){
+        ApachePOIExcelWrite excelWrite = new ApachePOIExcelWrite();
+        excelWrite.exportExcel();
+
+        return "generate-jadwal";
+    }
+
+    // Fungsi umum
+    public double generateNilaiPosisiHari(){
+        double hasil = 0;
+        hasil = 1 + Math.random()*(5-1);
+        if(hasil < 1 || hasil >= 6){
+            generateNilaiPosisiHari();
+        }
+
+        return hasil;
+    }
+
+    public double generateNilaiPosisiSesi(){
+        double hasil = 0;
+        hasil = 1 + Math.random()*(8-1);
+        if(hasil<1||hasil>8){
+            generateNilaiPosisiSesi();
+        }
+
+        return hasil;
+    }
+
+    public double generateNilaiPosisiRuangan(int panjangRuangan){
+        double hasil = 0;
+        hasil = 1 + Math.random()*(panjangRuangan - 1);
+        if(hasil<1||hasil>panjangRuangan){
+            generateNilaiPosisiRuangan(panjangRuangan);
+        }
+
+        return hasil;
+    }
+
+    public void cekNilaiFitness(List<Partikel> partikels, List<Matakuliah> matakuliahs){
+        List<String> sama = new ArrayList<>();
+        resetKeterangan(partikels);
+
+        // Loop sebanyak jumlah partikel
+        for(int i=0;i<partikels.size();i++){
+            double nilaiFitness = 0, pinalti = 0, pinaltiDosen = 0, pinaltiAsistenDosen = 0;
+            String keterangan = null;
+
+            for(int j=0;j<partikels.size();j++){
+                if(i==j || j==i){
+                    continue;
+                }
+
+                // Partikel1 == i
+                // Partikel2 == j
+                Partikel partikel1 = partikels.get(i);
+                Partikel partikel2 = partikels.get(j);
+
+                // Pengecekan partikel, matakuliah yang sama tidak bisa dialokasikan pada hari dan sesi yang sama
+                if(
+                        partikel1.getIdmatakuliah() == partikel2.getIdmatakuliah() &&
+                        Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
+                        Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi())
+                ){
+//                    System.out.println(partikels.get(i).getNama()+" == "+partikels.get(j).getNama());
+//                    sama.add(partikels.get(i).getNama()+" == "+partikels.get(j).getNama());
+                    keterangan = partikel1.getKeterangan();
+                    keterangan = keterangan.concat("C1 "+partikel2.getId());
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikel1);
+                    pinalti++;
+                }
+
+                // Pengecekan partikel, matakuliah berbeda tidak dapat berada pada hari, sesi dan ruangan yang sama
+                if(
+                        partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
+                        Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
+                        Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi()) &&
+                        Math.floor(partikel1.getPosisiruangan()) == Math.floor(partikel2.getPosisiruangan())
+                ){
+                    keterangan = partikel1.getKeterangan();
+                    keterangan = keterangan.concat("C2 "+partikel2.getId());
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikel1);
+                    pinalti++;
+                }
+
+//                String jenis = matakuliahService.findJenisMatakuliah(partikel1.getId());
+//                if(jenis == "T"){
+//                    //Pengecekan pertikel, matakuliah berbeda, hari sesi sama dicek bentrok antar dosen dan asisten dosen
+//                    if(
+//                            partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
+//                            partikel1.getPosisihari() == partikel2.getPosisihari() &&
+//                            partikel1.getPosisisesi() == partikel2.getPosisisesi() &&
+//                            partikel1.getDosen1() == partikel2.getDosen1()
+//                    ){
+//                        // Dosen 1
+//                        if(partikel1.getDosen1().length() != 0)
+//                            pinaltiDosen = cekPinaltiDosen(partikel1.getDosen1(), partikel2, pinaltiDosen);
+//                        // Dosen 2
+//                        if(partikel1.getDosen2().length() != 0)
+//                            pinaltiDosen = cekPinaltiDosen(partikel1.getDosen2(), partikel2, pinaltiDosen);
+//                        // Dosen 3
+//                        if(partikel1.getDosen3().length() != 0)
+//                            pinaltiDosen = cekPinaltiDosen(partikel1.getDosen3(), partikel2, pinaltiDosen);
+//                        // Dosen 4
+//                        if(partikel1.getDosen4().length() != 0)
+//                            pinaltiDosen = cekPinaltiDosen(partikel1.getDosen4(), partikel2, pinaltiDosen);
+//                    }
+//                }
+//                if(jenis == "P"){
+//                    if(partikel1.getAsistenDonsen1().length() != 0 && partikel2.getAsistenDonsen1().length() != 0){
+//                        // Asisten Dosen 1
+//                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(partikel1.getAsistenDonsen1(), partikel2, pinaltiAsistenDosen);
+//                        // Asisten Dosen 2
+//                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(partikel1.getAsistenDonsen2(), partikel2, pinaltiAsistenDosen);
+//                        // Asisten Dosen 3
+//                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(partikel1.getAsistenDonsen3(), partikel2, pinaltiAsistenDosen);
+//                    }
+//                }
+
+                // Pengecekan partike untuk sesi ibadah
+                if(Math.floor(partikel1.getPosisihari()) == 5 && Math.floor(partikel1.getPosisisesi()) == 5){
+                    keterangan = partikel1.getKeterangan();
+                    keterangan = keterangan.concat("C3");
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikel1);
+                    pinalti++;
+                    System.out.println(partikel1.getNama()+" TIdak bisa karena ibadah");
+                }
+            }
+        }
+    }
+
+    public void resetKeterangan(List<Partikel> partikels){
+        for (Partikel partikel : partikels){
+            partikel.setKeterangan("");
+            partikelService.save(partikel);
+        }
+    }
+
+//    public double cekPinaltiDosen(String dosen, Partikel partikel2, double pinaltiDosen){
+//        for(int i=1;i<5;i++){
+//            if(i == 1){
+//                if(partikel2.getDosen1().length() != 0){
+//                    if(dosen == partikel2.getDosen1())
+//                        pinaltiDosen++;
+//                }
+//            }
+//            else if(i == 2){
+//                if(partikel2.getDosen2().length() != 0){
+//                    if(dosen == partikel2.getDosen2())
+//                        pinaltiDosen++;
+//                }
+//            }
+//            else if(i == 3){
+//                if(partikel2.getDosen3().length() != 0){
+//                    if(dosen == partikel2.getDosen3())
+//                        pinaltiDosen++;
+//                }
+//            }
+//            else if(i == 4){
+//                if(partikel2.getDosen4().length() != 0){
+//                    if(dosen == partikel2.getDosen4())
+//                        pinaltiDosen++;
+//                }
+//            }
+//        }
+//
+//        return pinaltiDosen;
+//    }
+//
+//    public double cekPinaltiAsistenDosen(String asistenDosen, Partikel partikel, double pinaltiAsistenDosen){
+//        for(int i=3;i<4;i++){
+//            if(i == 1){
+//                if(asistenDosen == partikel.getAsistenDonsen1())
+//                    pinaltiAsistenDosen++;
+//            }
+//            else if(i == 2){
+//                if(asistenDosen == partikel.getAsistenDonsen2())
+//                    pinaltiAsistenDosen++;
+//            }
+//            else if(i == 3){
+//                if(asistenDosen == partikel.getAsistenDonsen3())
+//                    pinaltiAsistenDosen++;
+//            }
+//        }
+//
+//        return pinaltiAsistenDosen;
+//    }
+}
