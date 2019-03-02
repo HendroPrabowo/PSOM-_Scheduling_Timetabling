@@ -9,6 +9,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -412,6 +413,17 @@ public class MainController {
                     partikelService.save(partikel1);
                     pinalti++;
                 }
+            }
+
+            //Cek rombongan kelas dengan kapasitas ruangan
+            Integer rombongan = matakuliah1.getJumlahrombongankelas();
+            Ruangan ruangan = ruanganService.findByPosisi((int)Math.floor(partikel1.getPosisiruangan()));
+            if(rombongan > ruangan.getKapasitas()){
+                keterangan = partikel1.getKeterangan();
+                keterangan = keterangan.concat(" C4");
+                partikel1.setKeterangan(keterangan);
+                partikelService.save(partikel1);
+                pinalti++;
             }
 
             // Perhitungan nilai fitness dan simpan nilai fitness

@@ -32,4 +32,13 @@ public class RuanganService {
     public void delete(int id){
         ruanganRepository.deleteById(id);
     }
+
+    public Ruangan findByPosisi(int posisi){
+        List<Ruangan> semuaRuangan = this.findAll();
+        for(Ruangan ruangan : semuaRuangan){
+            if (ruangan.getPosisi().equals(posisi))
+                return ruangan;
+        }
+        return null;
+    }
 }
