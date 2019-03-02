@@ -250,7 +250,6 @@ public class MainController {
 
         List<Partikel> partikels = partikelService.findAll();
         matakuliahs = matakuliahService.findAll();
-        ruangans = ruanganService.findAll();
 
         cekNilaiFitness(partikels, matakuliahs);
 
@@ -278,7 +277,7 @@ public class MainController {
     // Fungsi umum
     public double generateNilaiPosisiHari(){
         double hasil = 0;
-        hasil = 1 + Math.random()*(5-1);
+        hasil = 1 + Math.random()*(5);
         if(hasil < 1 || hasil >= 6){
             generateNilaiPosisiHari();
         }
@@ -288,7 +287,7 @@ public class MainController {
 
     public double generateNilaiPosisiSesi(){
         double hasil = 0;
-        hasil = 1 + Math.random()*(8-1);
+        hasil = 1 + Math.random()*(8);
         if(hasil<1||hasil>8){
             generateNilaiPosisiSesi();
         }
@@ -298,7 +297,7 @@ public class MainController {
 
     public double generateNilaiPosisiRuangan(int panjangRuangan){
         double hasil = 0;
-        hasil = 1 + Math.random()*(panjangRuangan - 1);
+        hasil = 1 + Math.random()*(panjangRuangan);
         if(hasil<1||hasil>panjangRuangan){
             generateNilaiPosisiRuangan(panjangRuangan);
         }
