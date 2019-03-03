@@ -260,16 +260,35 @@ public class MainController {
         mutasi(partikels, ruangans);
 
         // Mengambil partikel yang baru
-        List<Partikel> partikels1 = partikelService.findAll();
-        cekNilaiFitness(partikels1, matakuliahs);
+//        List<Partikel> partikels1 = partikelService.findAll();
+        cekNilaiFitness(partikels, matakuliahs);
+
         // Mengambil partikel yang baru untuk diperbaiki
-        List<Partikel> partikels2 = partikelService.findAll();
-        cekKriteria(partikels2, matakuliahs, ruangans, 1);
+//        List<Partikel> partikels2 = partikelService.findAll();
+        cekKriteria(partikels, matakuliahs, ruangans, 1);
 
         long endTime = System.nanoTime();
         long totalTime = endTime - startTime;
         double second = (double)totalTime / 1000000000.0;
         System.out.println("Waktu eksekusi : "+second);
+
+        // Mengambil nilai partikel yang baru
+//        List<Partikel> partikels3 = partikelService.findAll();
+        double nilaiFitnessBest = 0;
+        for(Partikel partikel : partikels){
+            if(partikel.getNilaifitness() == 1)
+                nilaiFitnessBest++;
+        }
+        double akurasi = nilaiFitnessBest/partikels.size()*100;
+        System.out.println("Jumlah Matakuliah "+matakuliahs.size());
+        System.out.println("Jumlah Partikel "+partikels.size());
+        System.out.println("Akurasi = "+akurasi+"%");
+
+        // Kirim variable ke view
+        model.put("waktu", second);
+        model.put("akurasi", akurasi);
+        model.put("jumlah_matakuliah", matakuliahs.size());
+        model.put("jumlah_partikel", partikels.size());
 
         return "generate-jadwal";
     }
@@ -649,11 +668,11 @@ public class MainController {
                     // mutasi
                     mutasi(partikels, ruangans);
                     cekNilaiFitness(partikels, matakuliahs);
-                    jumlahIterasi++;
                     System.out.println("Iterasi ke : "+jumlahIterasi);
+                    jumlahIterasi++;
                     cekKriteria(partikels, matakuliahs, ruangans, jumlahIterasi);
                 }else if(jumlahIterasi > 5){
-                    System.out.println("Masuk ke iterasi > 5");
+                    System.out.println("Iterasi Maksimal");
                     continue;
                 }
             }
