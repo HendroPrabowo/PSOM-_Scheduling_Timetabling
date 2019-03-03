@@ -264,7 +264,7 @@ public class MainController {
         cekNilaiFitness(partikels1, matakuliahs);
         // Mengambil partikel yang baru untuk diperbaiki
         List<Partikel> partikels2 = partikelService.findAll();
-//        cekKriteria(partikels2, matakuliahs, ruangans, 1);
+        cekKriteria(partikels2, matakuliahs, ruangans, 1);
 
         long endTime = System.nanoTime();
         long totalTime = endTime - startTime;
@@ -280,8 +280,10 @@ public class MainController {
         List<Matakuliah> matakuliahs = matakuliahService.findAll();
         List<Ruangan> ruangans = ruanganService.findAll();
 
-        mutasi(partikels, ruangans);
-        System.out.println("Fungsi Mutasi Selesai");
+//        mutasi(partikels, ruangans);
+//        System.out.println("Fungsi Mutasi Selesai");
+        cekNilaiFitness(partikels, matakuliahs);
+        System.out.println("Cek nilai fitness selesai");
         return "kosong";
     }
 
@@ -325,7 +327,6 @@ public class MainController {
     }
 
     public void cekNilaiFitness(List<Partikel> partikels, List<Matakuliah> matakuliahs){
-        List<String> sama = new ArrayList<>();
         resetKeterangan(partikels);
 
         // Loop sebanyak jumlah partikel
@@ -377,8 +378,8 @@ public class MainController {
                 //Pengecekan partikel, matakuliah berbeda, hari sesi sama dicek bentrok antar dosen dan asisten dosen
                 if(
                         partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
-                        Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
-                        Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi())
+                        (int)partikel1.getPosisihari() == (int)partikel2.getPosisihari() &&
+                        (int)partikel1.getPosisisesi() == (int)partikel2.getPosisisesi()
                 ){
                     if(jenis.equals("T")){
                         // Dosen 1
@@ -407,21 +408,14 @@ public class MainController {
                     }
                 }
 
-                // Pengecekan partikel untuk sesi ibadah
-                if(Math.floor(partikel1.getPosisihari()) == 5 && Math.floor(partikel1.getPosisisesi()) == 5){
-                    keterangan = partikel1.getKeterangan();
-                    keterangan = keterangan.concat(" C3");
-                    partikel1.setKeterangan(keterangan);
-                    partikelService.save(partikel1);
-                    pinalti++;
-                }
-
                 // Perhitungan pinalti
                 if(pinaltiDosen!=0){
                     keterangan = partikels.get(i).getKeterangan();
                     keterangan = keterangan.concat(" C5:"+partikel2.getId());
                     partikel1.setKeterangan(keterangan);
                     partikelService.save(partikels.get(i));
+                    // reset nilai pinalti dosen
+                    pinaltiDosen = 0;
                     pinalti++;
                 }
                 if(pinaltiAsistenDosen != 0){
@@ -429,11 +423,22 @@ public class MainController {
                     keterangan = keterangan.concat(" C6:"+partikel2.getId());
                     partikel1.setKeterangan(keterangan);
                     partikelService.save(partikel1);
+                    // reset nilai pinaltiAsistenDosen
+                    pinaltiAsistenDosen = 0;
                     pinalti++;
                 }
             }
 
-            //Cek rombongan kelas dengan kapasitas ruangan
+            // Pengecekan partikel untuk sesi ibadah
+            if((int)partikel1.getPosisihari() == 5 && (int)partikel1.getPosisisesi() == 5){
+                keterangan = partikel1.getKeterangan();
+                keterangan = keterangan.concat(" C3");
+                partikel1.setKeterangan(keterangan);
+                partikelService.save(partikel1);
+                pinalti++;
+            }
+
+            // Cek rombongan kelas dengan kapasitas ruangan
             Integer rombongan = matakuliah1.getJumlahrombongankelas();
             Ruangan ruangan = ruanganService.findByPosisi((int)Math.floor(partikel1.getPosisiruangan()));
             if(rombongan > ruangan.getKapasitas()){
