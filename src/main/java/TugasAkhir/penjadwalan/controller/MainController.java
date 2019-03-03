@@ -15,6 +15,9 @@ import java.util.List;
 
 @Controller
 public class MainController {
+
+    private Integer jumlahIterasi = 0;
+
     @Autowired
     private RuanganService ruanganService;
     @Autowired
@@ -251,6 +254,22 @@ public class MainController {
 
         cekNilaiFitness(partikels, matakuliahs);
         updateGlobalBest(partikels);
+        // nilai variable learning
+        updatePosisi(partikels, ruangans.size());
+        // mutasi
+        mutasi(partikels, ruangans);
+
+        // Mengambil partikel yang baru
+        List<Partikel> partikels1 = partikelService.findAll();
+        cekNilaiFitness(partikels1, matakuliahs);
+        // Mengambil partikel yang baru untuk diperbaiki
+        List<Partikel> partikels2 = partikelService.findAll();
+//        cekKriteria(partikels2, matakuliahs, ruangans, 1);
+
+        long endTime = System.nanoTime();
+        long totalTime = endTime - startTime;
+        double second = (double)totalTime / 1000000000.0;
+        System.out.println("Waktu eksekusi : "+second);
 
         return "generate-jadwal";
     }
@@ -259,9 +278,10 @@ public class MainController {
     public String testing(){
         List<Partikel> partikels = partikelService.findAll();
         List<Matakuliah> matakuliahs = matakuliahService.findAll();
+        List<Ruangan> ruangans = ruanganService.findAll();
 
-        cekNilaiFitness(partikels, matakuliahs);
-        System.out.println("cekNilaiFitness Selesai");
+        mutasi(partikels, ruangans);
+        System.out.println("Fungsi Mutasi Selesai");
         return "kosong";
     }
 
@@ -503,6 +523,146 @@ public class MainController {
             partikel.setNilaiglobalbest(min);
             partikelService.save(partikel);
 
+        }
+    }
+
+    public void updatePosisi(List<Partikel> partikels, int jumlahRuangan){
+        double c1 = 0.1, c2 = 0.8, w = 0.9;
+        for(Partikel partikel : partikels){
+//            // Update posisi hari
+            generateNilaiUpdatePosisiHari(partikel, c1, c2, w);
+//            // Update posisi sesi
+            generateNilaiUpdatePosisiSesi(partikel, c1, c2, w);
+//            // Update posisi ruangan
+            generateNilaiUpdatePosisiRuangan(partikel, jumlahRuangan, c1, c2, w);
+        }
+    }
+
+    public void generateNilaiUpdatePosisiHari(Partikel partikel, double c1, double c2, double w){
+        double hasil = 1, posisi = 0;
+        hasil = (w*partikel.getKecepatanhari())+(c1*Math.random()*(partikel.getNilailocalbest()-partikel.getPosisihari()))+(c2*Math.random()*(partikel.getNilaiglobalbest()-partikel.getPosisihari()));
+        posisi = partikel.getPosisihari() + hasil;
+        if(posisi<1.0||posisi>=6.0){
+            generateNilaiUpdatePosisiHari(partikel, 0, 0, 0);
+        }
+        else {
+            partikel.setPosisihari(posisi);
+            partikelService.save(partikel);
+        }
+    }
+
+    public void generateNilaiUpdatePosisiSesi(Partikel partikel, double w, double c1, double c2){
+        double hasil = 0,posisi = 0;
+        hasil = (w*partikel.getKecepatansesi())+(c1*Math.random()*(partikel.getNilailocalbest()-partikel.getPosisisesi()))+(c2*Math.random()*(partikel.getNilaiglobalbest()-partikel.getPosisisesi()));
+        posisi = partikel.getPosisisesi()+hasil;
+        if(posisi<1.0||posisi>=9.0){
+            generateNilaiUpdatePosisiSesi(partikel, 0, 0, 0);
+        }
+        else{
+            partikel.setPosisisesi(posisi);
+            partikelService.save(partikel);
+        }
+    }
+
+    public void generateNilaiUpdatePosisiRuangan(Partikel partikel, int jumlahRuangan, double w, double c1, double c2){
+        double hasil = 0,posisi = 0;
+        hasil = (w*partikel.getKecepatanruangan())+(c1*Math.random()*(partikel.getNilailocalbest()-partikel.getPosisiruangan()))+(c2*Math.random()*(partikel.getNilaiglobalbest()-partikel.getPosisiruangan()));
+        posisi = partikel.getPosisiruangan()+hasil;
+        if(posisi<1.0||posisi>=jumlahRuangan+1.0){
+            generateNilaiUpdatePosisiRuangan(partikel, jumlahRuangan, 0, 0, 0);
+        }
+        else{
+            partikel.setPosisiruangan(posisi);
+            partikelService.save(partikel);
+        }
+    }
+
+    public void mutasi(List<Partikel> partikels, List<Ruangan> ruangans){
+        for (int i=0;i<partikels.size();i++){
+            double jumlahMK = 1;
+            // komponen i
+            Partikel partikel1 = partikels.get(i);
+            for (int j=0;j<partikels.size();j++){
+                if(j == i){
+                    continue;
+                }
+                // komponen j
+                Partikel partikel2 = partikels.get(j);
+
+                // mutasi pada id matakuliah, hari dan sesi yang sama
+                if(
+                        partikel1.getIdmatakuliah() == partikel2.getIdmatakuliah() &&
+                        (int)partikel1.getPosisihari() == (int)partikel2.getPosisihari() &&
+                        (int)partikel1.getPosisisesi() == (int)partikel2.getPosisisesi()
+                ){
+                    int posisiSesi = (int)partikel2.getPosisisesi();
+                    if(posisiSesi == 8 || posisiSesi > 8){
+                        posisiSesi = 1;
+                    }else {
+                        posisiSesi++;
+                    }
+                    partikel2.setPosisisesi(posisiSesi);
+                    partikelService.save(partikel2);
+                }
+
+                // mutasi pada id matakuliah berbeda, hari sesi dan ruangan sama
+                if(
+                        partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
+                        (int)partikel1.getPosisihari() == (int)partikel2.getPosisihari() &&
+                        (int)partikel1.getPosisisesi() == (int)partikel2.getPosisisesi() &&
+                        (int)partikel1.getPosisiruangan() == (int)partikel2.getPosisiruangan()
+                ){
+                    // ruangan diupdate
+                    generateNilaiUpdatePosisiRuangan(partikel2, ruangans.size(), 0.9, 0.1, 1.8);
+                }
+
+                // mutasi pada matakulah berturut turut di hari yang sama
+                if(partikel1.getIdmatakuliah() == partikel2.getIdmatakuliah() && (int)partikel1.getPosisihari() == (int)partikel2.getPosisihari()){
+                    jumlahMK++;
+                    if(jumlahMK == 3){
+                        int posisiHari =(int)partikel2.getPosisihari();
+                        if(posisiHari == 5 || posisiHari > 5)
+                            posisiHari = 1;
+                        else
+                            posisiHari++;
+                        partikel2.setPosisihari(posisiHari);
+                        partikelService.save(partikel2);
+                    }
+                }
+            }
+        }
+    }
+
+    public void cekKriteria(List<Partikel> partikels, List<Matakuliah> matakuliahs, List<Ruangan> ruangans, int jumlahIterasiPartikel){
+        jumlahIterasi = jumlahIterasiPartikel;
+        if(jumlahIterasi <= 5){
+            for(Partikel partikel : partikels){
+                if(jumlahIterasi <= 5 && partikel.getNilaifitness() != 1.0){
+                    updateLocalDanGlobalBest(partikels);
+                    // ubah posisi setiap partikel
+                    updatePosisi(partikels, ruangans.size());
+                    // mutasi
+                    mutasi(partikels, ruangans);
+                    cekNilaiFitness(partikels, matakuliahs);
+                    jumlahIterasi++;
+                    System.out.println("Iterasi ke : "+jumlahIterasi);
+                    cekKriteria(partikels, matakuliahs, ruangans, jumlahIterasi);
+                }else if(jumlahIterasi > 5){
+                    System.out.println("Masuk ke iterasi > 5");
+                    continue;
+                }
+            }
+        }else{
+            System.out.println("Melewati batas iterasi");
+        }
+    }
+
+    public void updateLocalDanGlobalBest(List<Partikel> partikels){
+        for(Partikel partikel : partikels){
+            if(partikel.getPosisihari() <= partikel.getNilaiglobalbest()){
+                partikel.setNilailocalbest(partikel.getPosisihari());
+                partikelService.save(partikel);
+            }
         }
     }
 }
