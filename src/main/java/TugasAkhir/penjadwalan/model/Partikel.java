@@ -31,7 +31,6 @@ public class Partikel {
         super();
         this.idmatakuliah = idmatakuliah;
         this.nama = nama;
-//        this.matakuliah = matakuliahService.findOne(idmatakuliah);
     }
 
     public Integer getId() {

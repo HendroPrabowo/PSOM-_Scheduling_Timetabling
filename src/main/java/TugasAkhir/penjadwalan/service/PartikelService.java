@@ -49,4 +49,17 @@ public class PartikelService {
     public void deleteAll(){
         partikelRepository.deleteAll();
     }
+
+    public Partikel findPartikel(int hari, int sesi, int ruangan){
+        List<Partikel> partikels = this.findAll();
+        for (Partikel partikel : partikels){
+            if(
+                    (int)partikel.getPosisihari() == hari &&
+                    (int)partikel.getPosisisesi() == sesi &&
+                    (int)partikel.getPosisiruangan() == ruangan
+            )
+                return partikel;
+        }
+        return null;
+    }
 }
