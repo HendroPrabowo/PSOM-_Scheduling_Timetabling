@@ -203,6 +203,7 @@ public class MainController {
         return "halaman-jadwal";
     }
 
+    int iterasi = 0;
     @GetMapping("/generate-jadwal")
     public String generatePenjadwalan(ModelMap model){
         long startTime = System.nanoTime();
@@ -219,11 +220,13 @@ public class MainController {
 
         // Inisialisasi posisi ruangan
         for(Ruangan ruangan : ruangans){
+            System.out.println("Inisialisasi posisi ruangan");
             ruangan.setPosisi(nilaiPosisi);
             ruanganService.save(ruangan);
             nilaiPosisi++;
         }
 
+        System.out.println("Inisialisasi partikel");
         for(Matakuliah matakuliah : matakuliahs){
             for(int i=0;i<matakuliah.getJumlahsks();i++){
                 Partikel partikel = new Partikel(matakuliah.getId(), "partikel"+iterator);
@@ -252,22 +255,22 @@ public class MainController {
 
         List<Partikel> partikels = partikelService.findAll();
 
+        System.out.println("Cek nilai fitness");
         cekNilaiFitness(partikels, matakuliahs);
         updateGlobalBest(partikels);
         // nilai variable learning
         updatePosisi(partikels, ruangans.size());
         // mutasi
+        System.out.println("Mutasi");
         mutasi(partikels, ruangans);
 
-        // Mengambil partikel yang baru
-//        List<Partikel> partikels1 = partikelService.findAll();
         cekNilaiFitness(partikels, matakuliahs);
 
-        // Mengambil partikel yang baru untuk diperbaiki
-//        List<Partikel> partikels2 = partikelService.findAll();
         cekKriteria(partikels, matakuliahs, ruangans, 1);
 
         // Fungsi Hill Climbing
+        hillClimbing(partikels);
+        cekNilaiFitness(partikels, matakuliahs);
 
         long endTime = System.nanoTime();
         long totalTime = endTime - startTime;
@@ -286,7 +289,7 @@ public class MainController {
         System.out.println("Jumlah Partikel "+partikels.size());
         System.out.println("Akurasi = "+akurasi+"%");
 
-        // Kirim variable ke view
+        // Kirim variabel ke view
         model.put("waktu", second);
         model.put("akurasi", akurasi);
         model.put("jumlah_matakuliah", matakuliahs.size());
@@ -682,7 +685,7 @@ public class MainController {
         }
         // Looping partikel yang melanggar ke hari, sesi, ruangan lain
         for(Partikel partikel : partikelMelanggar){
-            int hari = 0, sesi = 0, ruangan = 0;
+            int hari = 0, sesi = 0, ruangan = 0, loop = 0;
             for(int i=1;i<6;i++){
                 hari = i;
                 for(int j=1;j<9;j++){
@@ -696,12 +699,20 @@ public class MainController {
                                 partikel2 != null &&
                                 partikel.getId() == partikel2.getId() &&
                                 partikel2.getNilaifitness() == 1
-                        )
+                        ){
+                            loop = 1;
                             break;
+                        }
                         cekNilaiFitnessPartikel(partikel, i, j, k);
                     }
+                    if(loop != 0)
+                        break;
                 }
+                if(loop != 0)
+                    break;
             }
+            if(loop != 0)
+                break;
         }
     }
 
