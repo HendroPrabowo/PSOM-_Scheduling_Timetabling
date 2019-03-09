@@ -15,7 +15,7 @@ import java.util.List;
 
 @Controller
 public class MainController {
-
+    int loop = 0;
     private Integer jumlahIterasi = 0;
 
     @Autowired
@@ -203,11 +203,11 @@ public class MainController {
         return "halaman-jadwal";
     }
 
-    int iterasi = 0;
     @GetMapping("/generate-jadwal")
     public String generatePenjadwalan(ModelMap model){
         long startTime = System.nanoTime();
 
+        if(loop > 0) return null;
         // Inisialisasi variable awal
         int nilaiPosisi = 1, iterator = 1;
         double nilaiRandom = 0;
@@ -294,6 +294,8 @@ public class MainController {
         model.put("akurasi", akurasi);
         model.put("jumlah_matakuliah", matakuliahs.size());
         model.put("jumlah_partikel", partikels.size());
+
+        loop++;
 
         return "generate-jadwal";
     }
@@ -865,13 +867,15 @@ public class MainController {
 
     @GetMapping("/test-excel")
     public String textExcel(){
+        List<Partikel> partikels = partikelService.findAll();
+        List<Matakuliah> matakuliahs = matakuliahService.findAll();
+        List<Ruangan> ruangans = ruanganService.findAll();
         ApachePOIExcelWrite excelWrite = new ApachePOIExcelWrite();
-        excelWrite.exportExcel();
+        excelWrite.exportExcel(partikels, matakuliahs, ruangans);
 
-        return "generate-jadwal";
+        return "testing";
     }
 
-    int loop = 0;
     @GetMapping("/test-loop")
     public String testLoop(){
         System.out.println("LoopSekarang = "+loop);
