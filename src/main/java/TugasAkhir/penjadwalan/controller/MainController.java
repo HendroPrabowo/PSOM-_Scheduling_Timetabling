@@ -411,7 +411,7 @@ public class MainController {
                     }
                 }
 
-                // Perhitungan pinalti
+                // Perhitungan pinalti dosen dan asisten dosen
                 if(pinaltiDosen!=0){
                     keterangan = partikels.get(i).getKeterangan();
                     keterangan = keterangan.concat(" C5:"+partikel2.getId());
@@ -869,5 +869,20 @@ public class MainController {
         excelWrite.exportExcel();
 
         return "generate-jadwal";
+    }
+
+    int loop = 0;
+    @GetMapping("/test-loop")
+    public String testLoop(){
+        System.out.println("LoopSekarang = "+loop);
+        loop++;
+        return "testing";
+    }
+
+    @GetMapping("/reset-session")
+    public String resetSession(){
+        this.loop = 0;
+        System.out.println("Session Reset. Loop = "+loop);
+        return "testing";
     }
 }

@@ -5,5 +5,6 @@
 </div>
 
 <h2 class="text-center">Just testing</h2>
+<a href="/reset-session" class="btn btn-warning">Reset Session</a>
 
 <%@include file="common/footer.jspf"%>
