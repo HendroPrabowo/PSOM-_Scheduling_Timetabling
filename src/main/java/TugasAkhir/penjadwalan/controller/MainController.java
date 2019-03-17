@@ -207,7 +207,17 @@ public class MainController {
     public String generatePenjadwalan(ModelMap model){
         long startTime = System.nanoTime();
 
-        if(loop > 0) return null;
+        if(loop == 1){
+            System.out.println("Masuk ke if loop > 0");
+            List<Partikel> partikels = partikelService.findAll();
+            hillClimbing(partikels);
+            loop++;
+            return "generate-jadwal";
+        }
+        else if(loop == 2){
+            return null;
+        }
+
         // Inisialisasi variable awal
         int nilaiPosisi = 1, iterator = 1;
         double nilaiRandom = 0;
@@ -225,6 +235,8 @@ public class MainController {
             ruanganService.save(ruangan);
             nilaiPosisi++;
         }
+
+        System.out.println("lewat if > 0");
 
         System.out.println("Inisialisasi partikel");
         for(Matakuliah matakuliah : matakuliahs){
@@ -298,6 +310,18 @@ public class MainController {
         loop++;
 
         return "generate-jadwal";
+    }
+
+    @GetMapping("/ubah-jadwal")
+    public String ubahJadwal(ModelMap model){
+        List<Partikel> partikels = partikelService.findAll();
+        model.put("partikels", partikels);
+        return "ubah-jadwal";
+    }
+
+    @PostMapping("/ubah-jadwal")
+    public String ubahJadwalCek(){
+        return "ubah-jadwal";
     }
 
     // Fungsi umum
@@ -677,6 +701,7 @@ public class MainController {
     }
 
     public void hillClimbing(List<Partikel> partikels){
+        System.out.println("Hill Climbing");
         List<Ruangan> ruangans = ruanganService.findAll();
         List<Partikel> partikelMelanggar = new ArrayList<>();
 
@@ -887,6 +912,20 @@ public class MainController {
     public String resetSession(){
         this.loop = 0;
         System.out.println("Session Reset. Loop = "+loop);
+        return "testing";
+    }
+
+    @GetMapping("/add-session")
+    public String addSession(){
+        this.loop = 1;
+        System.out.println("Session Loop = 1");
+        return "testing";
+    }
+
+    @GetMapping("/add-session2")
+    public String addSession2(){
+        this.loop = 2;
+        System.out.println("Session Loop = 2");
         return "testing";
     }
 }
