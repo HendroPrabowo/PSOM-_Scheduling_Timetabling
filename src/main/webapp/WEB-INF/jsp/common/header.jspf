@@ -17,3 +17,27 @@
     <title>Penjadwalan</title>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-info">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/dosen" style="color: white"><b>Dosen</b></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/ruangan" style="color: white"><b>Ruangan</b></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/kelas" style="color: white"><b>Kelas</b></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/matakuliah" style="color: white"><b>Matakuliah</b></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/halaman-jadwal" style="color: white"><b>Halaman-Jadwal</b></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/ubah-jadwal" style="color: white"><b>Ubah-Jadwal</b></a>
+                </li>
+            </ul>
+        </div>
+    </nav>

@@ -11,6 +11,11 @@
 
     <h3>Generate Jadwal</h3>
     <a href="/generate-jadwal" class="btn btn-primary">Generate Jadwal</a>
+    <a href="/test-excel" class="btn btn-success">Generate Excel</a>
+
+    <%--<form action="/generate-jadwal" method="post">--%>
+        <%--<input type="submit" class="btn btn-danger" value="Generate Post">--%>
+    <%--</form>--%>
 
     <p>Jadwal akan digenerate dengan komposisi matakuliah : </p>
 

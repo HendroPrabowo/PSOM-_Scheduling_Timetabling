@@ -1,5 +1,6 @@
 package TugasAkhir.penjadwalan.controller;
 
+import java.io.*;
 import TugasAkhir.penjadwalan.model.*;
 import TugasAkhir.penjadwalan.service.*;
 import TugasAkhir.penjadwalan.spreadsheet.ApachePOIExcelWrite;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -208,7 +210,6 @@ public class MainController {
         long startTime = System.nanoTime();
 
         if(loop == 1){
-            System.out.println("Masuk ke if loop > 0");
             List<Partikel> partikels = partikelService.findAll();
             hillClimbing(partikels);
             loop++;
@@ -315,12 +316,39 @@ public class MainController {
     @GetMapping("/ubah-jadwal")
     public String ubahJadwal(ModelMap model){
         List<Partikel> partikels = partikelService.findAll();
-        model.put("partikels", partikels);
+        Collections.sort(partikels, new SortByHari());
+        List<Partikel> partikelAlreadySorted = new ArrayList<>();
+
+        for(int i=1;i<9;i++){
+            List<Partikel> partikelSort = new ArrayList<>();
+            for(Partikel partikel : partikels){
+                if((int)partikel.getPosisihari() == i){
+                    partikelSort.add(partikel);
+                }
+            }
+            Collections.sort(partikelSort, new SortBySesi());
+            for(Partikel partikel : partikelSort){
+                partikelAlreadySorted.add(partikel);
+            }
+        }
+        List<Ruangan> ruangans = ruanganService.findAll();
+        model.put("partikels", partikelAlreadySorted);
+        model.put("ruangans", ruangans);
         return "ubah-jadwal";
     }
 
     @PostMapping("/ubah-jadwal")
-    public String ubahJadwalCek(){
+    public String ubahJadwalCek(@ModelAttribute("partikel") int input, ModelMap model){
+        System.out.println("Partikel yang terpilih : "+input);
+        Partikel partikel = partikelService.findOne(input);
+        List<String> solusi = hillClimbingPartikel(partikel);
+        System.out.println("List solusi");
+        for (String string : solusi){
+            System.out.println(string);
+        }
+        List<Partikel> partikels = partikelService.findAll();
+        model.put("partikels", partikels);
+        model.put("listSolusi", solusi);
         return "ubah-jadwal";
     }
 
@@ -729,8 +757,9 @@ public class MainController {
                         ){
                             loop = 1;
                             break;
+                        }else {
+                            cekNilaiFitnessPartikel(partikel, i, j, k);
                         }
-                        cekNilaiFitnessPartikel(partikel, i, j, k);
                     }
                     if(loop != 0)
                         break;
@@ -741,6 +770,140 @@ public class MainController {
             if(loop != 0)
                 break;
         }
+    }
+
+    public List<String> hillClimbingPartikel(Partikel partikel){
+        System.out.println("Hill Climbing "+partikel.getNama());
+        List<Ruangan> ruangans = ruanganService.findAll();
+        List<Partikel> solusi = new ArrayList<>();
+        List<String> solusiString = new ArrayList<>();
+
+        for(int i=1;i<6;i++){ // hari
+            for(int j=1;j<9;j++){ // sesi
+                for(int k=1;k<ruangans.size();k++){ // ruangan
+                    Partikel partikel1 = partikelService.findPartikel(i, j, k);
+                    if(partikel1 != null){
+                        continue;
+                    }else {
+                        // cek nilai fitnessnya
+                        int nilaiFitness = (int)cekNilaiFitnessPartikelReturnInt(partikel, i, j, k);
+                        if(nilaiFitness == 1)
+                            solusiString.add("Hari:"+i+" Sesi:"+j+" Ruang:"+k+" NF:"+nilaiFitness);
+                    }
+                }
+            }
+        }
+
+        return solusiString;
+    }
+
+    public double cekNilaiFitnessPartikelReturnInt(Partikel partikel1, int hari, int sesi, int ruangan){
+        double nilaiFitness = 0, pinalti = 0, pinaltiDosen = 0, pinaltiAsistenDosen = 0;
+        String keterangan = null;
+        List<Partikel> partikels = partikelService.findAll();
+
+        // inisialisasi partikel percobaan
+        Partikel percobaan = new Partikel(partikel1.getIdmatakuliah(), partikel1.getNama()+"Coba");
+        percobaan.setPosisihari(hari);
+        percobaan.setPosisisesi(sesi);
+        percobaan.setPosisiruangan(ruangan);
+        percobaan.setKecepatanhari(partikel1.getKecepatanhari());
+        percobaan.setKecepatansesi(partikel1.getKecepatansesi());
+        percobaan.setKecepatanruangan(partikel1.getKecepatanruangan());
+        percobaan.setNilaifitness(partikel1.getNilaifitness());
+        percobaan.setNilailocalbest(partikel1.getNilailocalbest());
+        percobaan.setNilaiglobalbest(partikel1.getNilaiglobalbest());
+        percobaan.setKeterangan("");
+
+        Partikel partikel2 = partikelService.findPartikel(hari, sesi, ruangan);
+        // Slotnya kosong
+        if(partikel2 != null){
+            return 0;
+        }
+
+        for(Partikel partikel : partikels){
+            String jenis = matakuliahService.findJenisMatakuliah(percobaan.getIdmatakuliah());
+            Matakuliah matakuliah1 = matakuliahService.findOne(percobaan.getIdmatakuliah());
+            Matakuliah matakuliah2 = matakuliahService.findOne(partikel.getIdmatakuliah());
+
+            //Pengecekan partikel, matakuliah berbeda, hari sesi sama dicek bentrok antar dosen dan asisten dosen
+            if(
+                    percobaan.getIdmatakuliah() != partikel.getIdmatakuliah() &&
+                    (int)percobaan.getPosisihari() == (int)partikel.getPosisihari() &&
+                    (int)percobaan.getPosisisesi() == (int)partikel.getPosisisesi()
+            ){
+                if(jenis.equals("T")){
+                    // Dosen 1
+                    if(matakuliah1.getDosen1().length() != 0)
+                        pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen1(), matakuliah2, pinaltiDosen);
+                    // Dosen 2
+                    if(matakuliah1.getDosen2().length() != 0)
+                        pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen2(), matakuliah2, pinaltiDosen);
+                    // Dosen 3
+                    if(matakuliah1.getDosen3().length() != 0)
+                        pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen3(), matakuliah2, pinaltiDosen);
+                    // Dosen 4
+                    if(matakuliah1.getDosen4().length() != 0)
+                        pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen4(), matakuliah2, pinaltiDosen);
+                }
+                if(jenis.equals("P")){
+                    // Asisten Dosen 1
+                    if(matakuliah1.getAsistendosen1().length() != 0)
+                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen1(), matakuliah2, pinaltiAsistenDosen);
+                    // Asisten Dosen 2
+                    if(matakuliah1.getAsistendosen2().length() != 0)
+                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen2(), matakuliah2, pinaltiAsistenDosen);
+                    // Asisten Dosen 3
+                    if(matakuliah1.getAsistendosen3().length() != 0)
+                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen3(), matakuliah2, pinaltiAsistenDosen);
+                }
+            }
+
+            // Perhitungan pinalti
+            if(pinaltiDosen!=0){
+                keterangan = percobaan.getKeterangan();
+                keterangan = keterangan.concat(" C5:"+partikel.getId());
+                percobaan.setKeterangan(keterangan);
+                // reset nilai pinalti dosen
+                pinaltiDosen = 0;
+                pinalti++;
+            }
+            if(pinaltiAsistenDosen != 0){
+                keterangan = percobaan.getKeterangan();
+                keterangan = keterangan.concat(" C6:"+partikel.getId());
+                percobaan.setKeterangan(keterangan);
+                // reset nilai pinaltiAsistenDosen
+                pinaltiAsistenDosen = 0;
+                pinalti++;
+            }
+        }
+
+        // Pengecekan partikel untuk sesi ibadah
+        if((int)percobaan.getPosisihari() == 5 && (int)percobaan.getPosisisesi() == 5){
+            keterangan = percobaan.getKeterangan();
+            keterangan = keterangan.concat(" C3");
+            percobaan.setKeterangan(keterangan);
+            pinalti++;
+        }
+
+        // Cek rombongan kelas dengan kapasitas ruangan
+        int rombongan = matakuliahService.findOne(percobaan.getIdmatakuliah()).getJumlahrombongankelas();
+        Ruangan kelas = ruanganService.findByPosisi(ruangan);
+        if(rombongan > kelas.getKapasitas()){
+            keterangan = percobaan.getKeterangan();
+            keterangan = keterangan.concat(" C4");
+            percobaan.setKeterangan(keterangan);
+            pinalti++;
+        }
+
+        // Perhitungan nilai fitness dan simpan nilai fitness
+        nilaiFitness = (1.0)/(1.0+pinalti);
+        percobaan.setNilaifitness(nilaiFitness);
+
+        if(percobaan.getNilaifitness() == 1){
+            return 1;
+        }
+        return nilaiFitness;
     }
 
     public void cekNilaiFitnessPartikel(Partikel partikel1, int hari, int sesi, int ruangan){
@@ -762,7 +925,7 @@ public class MainController {
         percobaan.setKeterangan("");
 
         Partikel partikel2 = partikelService.findPartikel(hari, sesi, ruangan);
-        // Ruangannya kosong
+        // Slotnya kosong
         if(partikel2 != null){
             if(partikel1.getId() == partikel2.getId() && partikel1.getNilaifitness() == 1){
                 return;
@@ -928,4 +1091,113 @@ public class MainController {
         System.out.println("Session Loop = 2");
         return "testing";
     }
+
+    @PostMapping("/generate-jadwal")
+    public String generateJadwalPost(ModelMap model){
+        long startTime = System.nanoTime();
+
+        if(loop == 1){
+            List<Partikel> partikels = partikelService.findAll();
+            hillClimbing(partikels);
+            loop++;
+            return "generate-jadwal";
+        }
+        else if(loop == 2){
+            return null;
+        }
+
+        // Inisialisasi variable awal
+        int nilaiPosisi = 1, iterator = 1;
+        double nilaiRandom = 0;
+
+        List<Matakuliah> matakuliahs = matakuliahService.findAll();
+        List<Ruangan> ruangans = ruanganService.findAll();
+
+        // Hapus dulu smua partikel yang lama
+        partikelService.deleteAll();
+
+        // Inisialisasi posisi ruangan
+        for(Ruangan ruangan : ruangans){
+            System.out.println("Inisialisasi posisi ruangan");
+            ruangan.setPosisi(nilaiPosisi);
+            ruanganService.save(ruangan);
+            nilaiPosisi++;
+        }
+
+        System.out.println("lewat if > 0");
+
+        System.out.println("Inisialisasi partikel");
+        for(Matakuliah matakuliah : matakuliahs){
+            for(int i=0;i<matakuliah.getJumlahsks();i++){
+                Partikel partikel = new Partikel(matakuliah.getId(), "partikel"+iterator);
+
+                // Inisialisasi nilai hari awal
+                nilaiRandom = generateNilaiPosisiHari();
+                partikel.setPosisihari(nilaiRandom);
+                partikel.setKecepatanhari(nilaiRandom);
+
+                // Inisialisasi nilai sesi awal
+                nilaiRandom = generateNilaiPosisiSesi();
+                partikel.setPosisisesi(nilaiRandom);
+                partikel.setKecepatansesi(nilaiRandom);
+
+                // Inisialisasi nilai ruangan awal
+                nilaiRandom = generateNilaiPosisiRuangan(ruangans.size());
+                partikel.setPosisiruangan(nilaiRandom);
+                partikel.setKecepatanruangan(nilaiRandom);
+
+                // Inisialisasi local best
+                partikel.setNilailocalbest(partikel.getPosisihari());
+                partikelService.save(partikel);
+                iterator++;
+            }
+        }
+
+        List<Partikel> partikels = partikelService.findAll();
+
+        System.out.println("Cek nilai fitness");
+        cekNilaiFitness(partikels, matakuliahs);
+        updateGlobalBest(partikels);
+        // nilai variable learning
+        updatePosisi(partikels, ruangans.size());
+        // mutasi
+        System.out.println("Mutasi");
+        mutasi(partikels, ruangans);
+
+        cekNilaiFitness(partikels, matakuliahs);
+
+        cekKriteria(partikels, matakuliahs, ruangans, 1);
+
+        // Fungsi Hill Climbing
+        hillClimbing(partikels);
+        cekNilaiFitness(partikels, matakuliahs);
+
+        long endTime = System.nanoTime();
+        long totalTime = endTime - startTime;
+        double second = (double)totalTime / 1000000000.0;
+        System.out.println("Waktu eksekusi : "+second);
+
+        // Mengambil nilai partikel yang baru
+//        List<Partikel> partikels3 = partikelService.findAll();
+        double nilaiFitnessBest = 0;
+        for(Partikel partikel : partikels){
+            if(partikel.getNilaifitness() == 1)
+                nilaiFitnessBest++;
+        }
+        double akurasi = nilaiFitnessBest/partikels.size()*100;
+        System.out.println("Jumlah Matakuliah "+matakuliahs.size());
+        System.out.println("Jumlah Partikel "+partikels.size());
+        System.out.println("Akurasi = "+akurasi+"%");
+
+        // Kirim variabel ke view
+        model.put("waktu", second);
+        model.put("akurasi", akurasi);
+        model.put("jumlah_matakuliah", matakuliahs.size());
+        model.put("jumlah_partikel", partikels.size());
+
+        loop++;
+
+        return "generate-jadwal";
+    }
+
 }

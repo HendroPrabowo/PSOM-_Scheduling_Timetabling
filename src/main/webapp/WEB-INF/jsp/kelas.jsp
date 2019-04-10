@@ -6,7 +6,9 @@
         <h1>Kelas</h1>
     </div>
 
-    <table id="table" class="table table-bordered table-striped">
+    <a href="/kelas-add" class="btn btn-primary" style="margin-bottom: 10px">Tambah Kelas</a>
+
+    <table id="table" class="table table-bordered table-striped table-sm">
         <thead>
         <tr>
             <th>Inisial</th>
@@ -22,12 +24,10 @@
                 <td>${kelas.nama}</td>
                 <td>${kelas.angkatan}</td>
                 <td>${kelas.jumlah}</td>
-                <td><a href="/kelas-delete?id=${kelas.id}" class="btn btn-danger">Delete</a>  <a class="btn btn-primary" href="/kelas-update?id=${kelas.id}">Update</a></td>
+                <td><a href="/kelas-delete?id=${kelas.id}" class="btn btn-danger btn-sm">Delete</a>  <a class="btn btn-primary btn-sm" href="/kelas-update?id=${kelas.id}">Update</a></td>
             </tr>
         </c:forEach>
     </table>
-
-    <a href="/kelas-add" class="btn btn-primary">Tambah Kelas</a>
 </div>
 
 <script src="${pageContext.request.contextPath}/js/dataTableScript.js" type="text/javascript"></script>

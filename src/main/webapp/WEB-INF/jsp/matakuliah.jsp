@@ -8,7 +8,9 @@
 
     <% Integer i = 1; %>
 
-    <table id="tableScrollVertical" class="table table-bordered table-striped display nowrap" style="width:100%">
+    <a href="/matakuliah-add" class="btn btn-primary" style="margin-bottom: 10px">Tambah Mata Kuliah</a>
+
+    <table id="tableScrollVertical" class="table table-bordered table-striped display nowrap table-sm" style="width:100%">
         <thead>
         <tr>
             <th>No</th>
@@ -57,14 +59,11 @@
                     <td>${matakuliah.kelas4}</td>
                     <td>${matakuliah.jumlahrombongankelas}</td>
 
-                    <td><a href="/matakuliah-delete?id=${matakuliah.id}" class="btn btn-danger">Delete</a>  <a class="btn btn-primary" href="/matakuliah-update?id=${matakuliah.id}">Update</a></td>
+                    <td><a href="/matakuliah-delete?id=${matakuliah.id}" class="btn btn-danger btn-sm">Delete</a>  <a class="btn btn-primary btn-sm" href="/matakuliah-update?id=${matakuliah.id}">Update</a></td>
                 </tr>
             </c:forEach>
         </tbody>
     </table>
-
-    <a href="/matakuliah-add" class="btn btn-primary">Tambah Mata Kuliah</a>
-
 </div>
 
 <script src="${pageContext.request.contextPath}/js/dataTableScript.js" type="text/javascript"></script>
