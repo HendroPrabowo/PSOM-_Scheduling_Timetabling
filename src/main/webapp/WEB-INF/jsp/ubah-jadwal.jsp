@@ -1,10 +1,16 @@
 <%@ page import="TugasAkhir.penjadwalan.model.Partikel" %>
 <%@ page import="java.util.List" %>
 <%@ page import="TugasAkhir.penjadwalan.model.Ruangan" %>
-<%@include file="common/header.jspf"%>
+<%@ include file="common/header.jspf"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <% Integer i = 1; %>
 <% List<Ruangan> ruangans = (List<Ruangan>)pageContext.findAttribute("ruangans"); %>
+
+<style>
+    .table td {
+        text-align: center;
+    }
+</style>
 
 <div class="container-fluid">
     <div class="jumbotron">
@@ -114,7 +120,7 @@
                                     <td></td>
                                     <td>${partikel.nilaifitness}</td>
                                     <td>${partikel.keterangan}</td>
-                                    <td><a href="#" class="btn btn-danger btn-sm">Pindahkan</a></td>
+                                    <td><form method="post"><input type="hidden" name="id" value="${partikel.id}"><button type="submit" class="btn btn-danger btn-sm">Pindahkan</button></form></td>
                                 </tr>
                             </c:forEach>
                         </tbody>

@@ -338,24 +338,47 @@ public class MainController {
     }
 
     @PostMapping("/ubah-jadwal")
-    public String ubahJadwalCek(@ModelAttribute("partikel") int input, ModelMap model){
-        System.out.println("Partikel yang terpilih : "+input);
-        Partikel partikel = partikelService.findOne(input);
-        List<String> solusi = hillClimbingPartikel(partikel);
-        System.out.println("List solusi");
-        for (String string : solusi){
-            System.out.println(string);
+    public String ubahJadwalCek(@RequestParam("id") int id, ModelMap model){
+        System.out.println(id);
+        Partikel partikel = partikelService.findOne(id);
+        List<Partikel> solusi = hillClimbingPartikel(partikel);
+        List<Ruangan> ruangans = ruanganService.findAll();
+
+        for(Partikel partikel1 : solusi){
+            System.out.println(partikel1.getId()+" Nama : "+partikel1.getNama()+" Hari:"+partikel1.getPosisihari()+" Sesi:"+partikel1.getPosisisesi()+" Ruangan:"+partikel1.getPosisiruangan());
         }
-        List<Partikel> partikels = partikelService.findAll();
-        model.put("partikels", partikels);
-        model.put("listSolusi", solusi);
-        return "ubah-jadwal";
+
+//        System.out.println("Partikel yang terpilih : "+id);
+//        Partikel partikel = partikelService.findOne(input);
+//        List<String> solusi = hillClimbingPartikel(partikel);
+//        System.out.println("List solusi");
+//        for (String string : solusi){
+//            System.out.println(string);
+//        }
+//        List<Partikel> partikels = partikelService.findAll();
+//        model.put("partikels", partikels);
+//        model.put("listSolusi", solusi);
+        model.put("partikel", partikel);
+        model.put("solusi", solusi);
+        model.put("ruangans", ruangans);
+        return "ubah-jadwal-choose";
     }
+
+    @GetMapping("/ubah-jadwal-apply")
+    public String ubahJadwalApplyGet(@RequestParam int hari, @RequestParam int sesi, @RequestParam int ruangan, @RequestParam int id){
+        System.out.println(hari+" "+sesi+" "+ruangan+" "+id);
+        return "testing";
+    }
+
+//    public void ubahJadwalApply(@RequestParam("hari") int hari, @RequestParam("sesi") int sesi, @RequestParam("ruangan") int ruangan){
+//        System.out.println(hari+" "+sesi+" "+ruangan);
+//    }
 
     // Fungsi umum
     public double generateNilaiPosisiHari(){
         double hasil = 0;
         hasil = 1 + Math.random()*(5);
+
         if(hasil < 1 || hasil >= 6){
             generateNilaiPosisiHari();
         }
@@ -772,11 +795,11 @@ public class MainController {
         }
     }
 
-    public List<String> hillClimbingPartikel(Partikel partikel){
+    public List<Partikel> hillClimbingPartikel(Partikel partikel){
         System.out.println("Hill Climbing "+partikel.getNama());
         List<Ruangan> ruangans = ruanganService.findAll();
         List<Partikel> solusi = new ArrayList<>();
-        List<String> solusiString = new ArrayList<>();
+        int counter = 1;
 
         for(int i=1;i<6;i++){ // hari
             for(int j=1;j<9;j++){ // sesi
@@ -787,14 +810,24 @@ public class MainController {
                     }else {
                         // cek nilai fitnessnya
                         int nilaiFitness = (int)cekNilaiFitnessPartikelReturnInt(partikel, i, j, k);
-                        if(nilaiFitness == 1)
-                            solusiString.add("Hari:"+i+" Sesi:"+j+" Ruang:"+k+" NF:"+nilaiFitness);
+                        if(nilaiFitness == 1){
+                            Partikel solusiPartikel = new Partikel();
+                            solusiPartikel.setIdmatakuliah(partikel.getIdmatakuliah());
+                            solusiPartikel.setNama("PartikelSolusi"+counter);
+                            counter++;
+                            solusiPartikel.setPosisihari(i);
+                            solusiPartikel.setPosisisesi(j);
+                            solusiPartikel.setPosisiruangan(k);
+                            solusiPartikel.setNilaifitness(nilaiFitness);
+                            solusiPartikel.setKeterangan("");
+                            solusi.add(solusiPartikel);
+                        }
                     }
                 }
             }
         }
 
-        return solusiString;
+        return solusi;
     }
 
     public double cekNilaiFitnessPartikelReturnInt(Partikel partikel1, int hari, int sesi, int ruangan){
