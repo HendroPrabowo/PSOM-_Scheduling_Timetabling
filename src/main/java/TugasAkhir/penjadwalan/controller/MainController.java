@@ -370,10 +370,6 @@ public class MainController {
         return "testing";
     }
 
-//    public void ubahJadwalApply(@RequestParam("hari") int hari, @RequestParam("sesi") int sesi, @RequestParam("ruangan") int ruangan){
-//        System.out.println(hari+" "+sesi+" "+ruangan);
-//    }
-
     // Fungsi umum
     public double generateNilaiPosisiHari(){
         double hasil = 0;
