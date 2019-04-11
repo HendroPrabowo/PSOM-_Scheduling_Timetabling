@@ -33,6 +33,9 @@
                     <a class="nav-link" href="/matakuliah" style="color: white"><b>Matakuliah</b></a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="/mahasiswa" style="color: white"><b>Mahasiswa</b></a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="/halaman-jadwal" style="color: white"><b>Halaman-Jadwal</b></a>
                 </li>
                 <li class="nav-item">

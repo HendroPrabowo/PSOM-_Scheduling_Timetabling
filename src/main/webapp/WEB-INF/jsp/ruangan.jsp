@@ -8,14 +8,14 @@
     </div>
 
     <div class="row">
-        <div class="col-md-2"></div>
-        <div class="col-md-8"><a href="/ruangan-add" class="btn btn-primary" style="margin-bottom: 10px">Tambah Ruangan</a></div>
-        <div class="col-md-2"></div>
+        <div class="col-md-4"></div>
+        <div class="col-md-4"><a href="/ruangan-add" class="btn btn-primary" style="margin-bottom: 10px">Tambah Ruangan</a></div>
+        <div class="col-md-4"></div>
     </div>
 
     <div class="row">
-        <div class="col-md-2"></div>
-        <div class="col-md-8">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
             <table id="table" class="table table-bordered table-striped table-sm">
                 <thead>
                 <tr>
@@ -38,7 +38,7 @@
                 </c:forEach>
             </table>
         </div>
-        <div class="col-md-2"></div>
+        <div class="col-md-4"></div>
     </div>
 </div>
 
