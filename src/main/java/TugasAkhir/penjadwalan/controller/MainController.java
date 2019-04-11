@@ -4,6 +4,7 @@ import java.io.*;
 import TugasAkhir.penjadwalan.model.*;
 import TugasAkhir.penjadwalan.service.*;
 import TugasAkhir.penjadwalan.spreadsheet.ApachePOIExcelWrite;
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -30,6 +31,8 @@ public class MainController {
     private MatakuliahService matakuliahService;
     @Autowired
     private PartikelService partikelService;
+    @Autowired
+    private MahasiswaService mahasiswaService;
 
     @GetMapping("/")
     public String index(){
@@ -368,6 +371,14 @@ public class MainController {
     public String ubahJadwalApplyGet(@RequestParam int hari, @RequestParam int sesi, @RequestParam int ruangan, @RequestParam int id){
         System.out.println(hari+" "+sesi+" "+ruangan+" "+id);
         return "testing";
+    }
+
+    @GetMapping("/mahasiswa")
+    public String mahasiswa(ModelMap model){
+        List<Mahasiswa> mahasiswas = new ArrayList<>();
+        mahasiswas = mahasiswaService.findAll();
+        model.put("mahasiswas", mahasiswas);
+        return "mahasiswa";
     }
 
     // Fungsi umum
