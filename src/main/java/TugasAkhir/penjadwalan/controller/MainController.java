@@ -4,14 +4,12 @@ import java.io.*;
 import TugasAkhir.penjadwalan.model.*;
 import TugasAkhir.penjadwalan.service.*;
 import TugasAkhir.penjadwalan.spreadsheet.ApachePOIExcelWrite;
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -167,19 +165,26 @@ public class MainController {
     @GetMapping("/matakuliah")
     public String matakuliah(ModelMap model){
         List<Matakuliah> matakuliahs = new ArrayList<>();
+        List<Dosen> dosens = new ArrayList<>();
         matakuliahs = matakuliahService.findAll();
+        dosens = dosenService.findAll();
         model.put("matakuliahs", matakuliahs);
+        model.put("dosens", dosens);
 
         return "matakuliah";
     }
 
     @GetMapping("/matakuliah-add")
-    public String matakuliahAdd(){
+    public String matakuliahAdd(ModelMap model){
+        List<Dosen> dosens = new ArrayList<>();
+        dosens = dosenService.findAll();
+        model.put("dosens", dosens);
         return "matakuliah-form";
     }
 
     @PostMapping("/matakuliah-save")
     public String matakuliahSave(@ModelAttribute Matakuliah matakuliah, BindingResult result){
+        matakuliah.setJumlahrombongankelas(0);
         matakuliahService.save(matakuliah);
 
         return "redirect:/matakuliah";

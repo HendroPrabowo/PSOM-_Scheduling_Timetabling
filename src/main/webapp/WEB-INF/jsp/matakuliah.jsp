@@ -1,7 +1,12 @@
+<%@ page import="TugasAkhir.penjadwalan.model.Matakuliah" %>
+<%@ page import="java.util.List" %>
+<%@ page import="TugasAkhir.penjadwalan.model.Dosen" %>
 <%@ include file="common/header.jspf"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<% List<Dosen> dosens = (List<Dosen>) pageContext.findAttribute("dosens"); %>
 
-<div class="container-fluid">
+        <div
+    class="container-fluid">
     <div class="jumbotron">
         <h1>Mata Kuliah</h1>
     </div>
@@ -26,16 +31,24 @@
             <th>Asisten Dosen 1</th>
             <th>Asisten Dosen 2</th>
             <th>Asisten Dosen 3</th>
-            <th>Kelas 1</th>
-            <th>Kelas 2</th>
-            <th>Kelas 3</th>
-            <th>Kelas 4</th>
             <th>Jumlah Rombongan Kelas</th>
             <th>Action</th>
         </tr>
         </thead>
         <tbody>
             <c:forEach var="matakuliah" items="${matakuliahs}">
+                <%
+                    Matakuliah matakuliah = (Matakuliah)pageContext.findAttribute("matakuliah");
+                    int dosen1 = 0, dosen2 = 0, dosen3 = 0, dosen4 = 0;
+                    if(matakuliah.getDosen1().length() != 0)
+                        dosen1 = Integer.parseInt(matakuliah.getDosen1());
+                    if(matakuliah.getDosen2().length() != 0)
+                        dosen2 = Integer.parseInt(matakuliah.getDosen2());
+                    if(matakuliah.getDosen3().length() != 0)
+                        dosen3 = Integer.parseInt(matakuliah.getDosen3());
+                    if(matakuliah.getDosen4().length() != 0)
+                        dosen4 = Integer.parseInt(matakuliah.getDosen4());
+                %>
                 <tr>
                     <td><%
                         out.print(i);
@@ -46,20 +59,48 @@
                     <td>${matakuliah.program}</td>
                     <td>${matakuliah.jenis}</td>
                     <td>${matakuliah.jumlahsks}</td>
-                    <td>${matakuliah.dosen1}</td>
-                    <td>${matakuliah.dosen2}</td>
-                    <td>${matakuliah.dosen3}</td>
-                    <td>${matakuliah.dosen4}</td>
+
+                    <td>
+                        <%
+                            if(dosen1 != 0)
+                                for(Dosen dosen : dosens)
+                                    if(dosen.getId() == dosen1)
+                                        out.print(dosen.getNama());
+                        %>
+                    </td>
+                    <td>
+                        <%
+                            if(dosen2 != 0)
+                                for(Dosen dosen : dosens)
+                                    if(dosen.getId() == dosen2)
+                                        out.print(dosen.getNama());
+                        %>
+                    </td>
+                    <td>
+                        <%
+                            for(Dosen dosen : dosens)
+                                if(dosen.getId() == dosen3)
+                                    out.print(dosen.getNama());
+                        %>
+                    </td>
+                    <td>
+                        <%
+                            if(dosen4 != 0)
+                                for(Dosen dosen : dosens)
+                                    if(dosen.getId() == dosen4)
+                                        out.print(dosen.getNama());
+                        %>
+                    </td>
                     <td>${matakuliah.asistendosen1}</td>
                     <td>${matakuliah.asistendosen2}</td>
                     <td>${matakuliah.asistendosen3}</td>
-                    <td>${matakuliah.kelas1}</td>
-                    <td>${matakuliah.kelas2}</td>
-                    <td>${matakuliah.kelas3}</td>
-                    <td>${matakuliah.kelas4}</td>
-                    <td>${matakuliah.jumlahrombongankelas}</td>
+                    <td class="text-center">${matakuliah.jumlahrombongankelas} <a href="#" class="btn btn-link btn-sm">View</a></td>
 
-                    <td><a href="/matakuliah-delete?id=${matakuliah.id}" class="btn btn-danger btn-sm">Delete</a>  <a class="btn btn-primary btn-sm" href="/matakuliah-update?id=${matakuliah.id}">Update</a></td>
+                    <td>
+                        <a href="#" class="btn btn-success btn-sm">Assign Mahasiswa</a>
+                        <a href="/matakuliah-delete?id=${matakuliah.id}" class="btn btn-danger btn-sm">Delete</a>
+                        <a class="btn btn-primary btn-sm" href="/matakuliah-update?id=${matakuliah.id}">Update</a>
+                    </td>
                 </tr>
             </c:forEach>
         </tbody>
