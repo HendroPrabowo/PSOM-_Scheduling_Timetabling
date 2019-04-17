@@ -386,6 +386,24 @@ public class MainController {
         return "mahasiswa";
     }
 
+    @GetMapping("/assign-mahasiswa")
+    public String assignMahsiswa(@RequestParam int id, ModelMap model){
+        Matakuliah matakuliah = matakuliahService.findOne(id);
+        List<Mahasiswa> mahasiswas = mahasiswaService.findAll();
+        List<Dosen> dosens = dosenService.findAll();
+
+        model.put("matakuliah", matakuliah);
+        model.put("mahasiswas", mahasiswas);
+        model.put("dosens",dosens);
+
+        return "assign-mahasiswa";
+    }
+
+    @PostMapping("/assign-mahasiswa")
+    public String assignMahasiswaPost(@ModelAttribute List<Integer> id, BindingResult result){
+        return "testing";
+    }
+
     // Fungsi umum
     public double generateNilaiPosisiHari(){
         double hasil = 0;
