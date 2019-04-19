@@ -31,6 +31,8 @@ public class MainController {
     private PartikelService partikelService;
     @Autowired
     private MahasiswaService mahasiswaService;
+    @Autowired
+    private AssignMahasiswaService assignMahasiswaService;
 
     @GetMapping("/")
     public String index(){
@@ -400,8 +402,43 @@ public class MainController {
     }
 
     @PostMapping("/assign-mahasiswa")
-    public String assignMahasiswaPost(@ModelAttribute List<Integer> id, BindingResult result){
+    public String assignMahasiswaPost(@RequestParam List<Integer> id){
+        int id_matakuliah = id.get(0);
+        Matakuliah matakuliah = matakuliahService.findOne(id_matakuliah);
+        for(int i=1;i<id.size();i++){
+            if(assignMahasiswaService.findMahasiswaByMatakuliah(id.get(i), id_matakuliah)){
+                AssignMahasiswa assignMahasiswa = new AssignMahasiswa();
+                assignMahasiswa.setId_mahasiswa(id.get(i));
+                assignMahasiswa.setId_matakuliah(id_matakuliah);
+                assignMahasiswaService.save(assignMahasiswa);
+            }
+        }
+
+        matakuliah.setJumlahrombongankelas(assignMahasiswaService.countMahasiswa(id_matakuliah));
+        matakuliahService.save(matakuliah);
+
         return "testing";
+    }
+
+    @GetMapping("/assign-mahasiswa-list")
+    public String assingMahasiswaList(@RequestParam int id, ModelMap model){
+        Matakuliah matakuliah = matakuliahService.findOne(id);
+
+        List<Dosen> dosens = dosenService.findAll();
+        List<AssignMahasiswa> assignMahasiswas = assignMahasiswaService.getAllMahasiswaByMatakuliahId(id);
+
+        List<Mahasiswa> mahasiswas = new ArrayList<>();
+
+        for(AssignMahasiswa assignMahasiswa : assignMahasiswas){
+            Mahasiswa mahasiswa = mahasiswaService.fincOne(assignMahasiswa.getId_mahasiswa());
+            mahasiswas.add(mahasiswa);
+        }
+
+        model.put("matakuliah", matakuliah);
+        model.put("mahasiswas", mahasiswas);
+        model.put("dosens",dosens);
+
+        return "assign-mahasiswa-list";
     }
 
     // Fungsi umum

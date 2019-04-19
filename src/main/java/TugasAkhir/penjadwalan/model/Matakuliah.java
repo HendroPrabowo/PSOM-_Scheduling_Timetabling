@@ -29,7 +29,6 @@ public class Matakuliah {
     private String kelas4;
     private Integer jumlahrombongankelas;
 
-
     public Integer getId() {
         return id;
     }

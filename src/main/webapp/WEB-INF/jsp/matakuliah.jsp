@@ -94,7 +94,7 @@
                     <td>${matakuliah.asistendosen1}</td>
                     <td>${matakuliah.asistendosen2}</td>
                     <td>${matakuliah.asistendosen3}</td>
-                    <td class="text-center">${matakuliah.jumlahrombongankelas} <a href="#" class="badge badge-warning badge-pill">View</a></td>
+                    <td class="text-center"><b>${matakuliah.jumlahrombongankelas}</b> <a href="/assign-mahasiswa-list?id=${matakuliah.id}" class="badge badge-warning badge-pill">View</a></td>
 
                     <td>
                         <a href="/assign-mahasiswa?id=${matakuliah.id}" class="btn btn-success btn-sm">Assign Mahasiswa</a>
