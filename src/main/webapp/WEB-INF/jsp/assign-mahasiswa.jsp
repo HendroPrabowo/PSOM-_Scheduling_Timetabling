@@ -7,8 +7,7 @@
 <% Matakuliah matakuliah = (Matakuliah)pageContext.findAttribute("matakuliah"); %>
 <% Integer i = 1; %>
 
-        <div
-    class="container-fluid">
+<div class="container-fluid">
     <div class="jumbotron">
         <h1>Assing Mahasiswa</h1>
     </div>
@@ -16,8 +15,8 @@
     <div class="row">
         <div class="col-md-4"></div>
         <div class="col-md-4">
-            <label for="tabelMatakuliah">Detail Matakuliah</label>
-            <table class="table table-bordered table-sm" id="tabelMatakuliah">
+            <label for="tableDosen">Detail Matakuliah</label>
+            <table id="tableDosen" class="table table-bordered table-sm">
                 <tr>
                     <td>Inisial</td>
                     <td>:</td>
@@ -100,7 +99,8 @@
             </table>
 
             <form method="post">
-                <table class="table table-bordered table-sm">
+                <label for="table"><b>List Mahasiswa</b></label>
+                <table id="table" class="table table-bordered table-sm">
                     <thead>
                     <tr>
                         <th>No.</th>
@@ -136,5 +136,7 @@
         <div class="col-md-4"></div>
     </div>
 </div>
+
+<script src="${pageContext.request.contextPath}/js/dataTableScript.js" type="text/javascript"></script>
 
 <%@include file="common/footer.jspf"%>

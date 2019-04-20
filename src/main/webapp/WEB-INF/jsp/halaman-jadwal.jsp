@@ -10,16 +10,16 @@
     </div>
 
     <h3>Generate Jadwal</h3>
-    <a href="/generate-jadwal" class="btn btn-primary">Generate Jadwal</a>
-    <a href="/test-excel" class="btn btn-success">Generate Excel</a>
 
-    <%--<form action="/generate-jadwal" method="post">--%>
-        <%--<input type="submit" class="btn btn-danger" value="Generate Post">--%>
-    <%--</form>--%>
+    <form method="post">
+        <button type="submit" class="btn btn-primary" style="float: left;">Generate Jadwal</button>
+    </form>
+    &nbsp;
+    <a href="/test-excel" class="btn btn-success">Generate Excel</a>
 
     <p>Jadwal akan digenerate dengan komposisi matakuliah : </p>
 
-    <table id="tableScrollVertical" class="table table-bordered table-striped display nowrap" style="width:100%">
+    <table id="tableScrollVertical" class="table table-bordered table-striped display nowrap table-sm" style="width:100%">
         <thead>
         <tr>
             <th>No</th>

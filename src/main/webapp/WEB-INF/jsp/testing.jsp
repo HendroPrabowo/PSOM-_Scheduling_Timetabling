@@ -6,7 +6,9 @@
     </div>
 
     <h2 class="text-center">Just testing</h2>
-    <a href="/reset-session" class="btn btn-warning">Reset Session</a>
+    <form action="/testing-hill-climbing-lo" method="post">
+        <button type="submit" class="btn btn-primary">Hill Climb Testing Dengan Post</button>
+    </form>
 </div>
 
 <%@include file="common/footer.jspf"%>

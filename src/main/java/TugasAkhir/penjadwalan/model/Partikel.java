@@ -21,7 +21,7 @@ public class Partikel {
     private double nilaifitness;
     private double nilailocalbest;
     private double nilaiglobalbest;
-    private String keterangan = ">";
+    private String keterangan = "";
 
     public Partikel(){
         super();

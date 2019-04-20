@@ -1,10 +1,12 @@
 <%@ page import="TugasAkhir.penjadwalan.model.Partikel" %>
 <%@ page import="java.util.List" %>
 <%@ page import="TugasAkhir.penjadwalan.model.Ruangan" %>
+<%@ page import="TugasAkhir.penjadwalan.model.Matakuliah" %>
 <%@ include file="common/header.jspf"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <% Integer i = 1; %>
 <% List<Ruangan> ruangans = (List<Ruangan>)pageContext.findAttribute("ruangans"); %>
+<% List<Matakuliah> matakuliahs = (List<Matakuliah>)pageContext.findAttribute("matakuliahs"); %>
 
 <style>
     .table td {
@@ -26,6 +28,7 @@
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>Id</th>
                                 <th>Matakuliah</th>
                                 <th>Hari</th>
                                 <th>Sesi</th>
@@ -56,10 +59,19 @@
                                             i++;
                                         %>
                                     </td>
-                                    <td>${partikel.idmatakuliah}</td>
+                                    <td>${partikel.id}</td>
                                     <td>
                                         <%
                                             Partikel partikel = (Partikel)pageContext.findAttribute("partikel");
+                                            for(Matakuliah matakuliah : matakuliahs){
+                                                if(partikel.getIdmatakuliah().equals(matakuliah.getId())){
+                                                    out.print(matakuliah.getInisial());
+                                                }
+                                            }
+                                        %>
+                                    </td>
+                                    <td>
+                                        <%
                                             Integer hari = (int)partikel.getPosisihari();
                                             if(hari == 1){
                                                 out.print("Senin");
