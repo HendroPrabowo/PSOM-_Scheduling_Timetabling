@@ -6,6 +6,7 @@ import TugasAkhir.penjadwalan.service.*;
 import TugasAkhir.penjadwalan.spreadsheet.ApachePOIExcelWrite;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,8 @@ public class MainController {
     private MahasiswaService mahasiswaService;
     @Autowired
     private AssignMahasiswaService assignMahasiswaService;
+    @Autowired
+    private ConstraintsService constraintsService;
 
     @GetMapping("/")
     public String index(){
@@ -514,6 +517,24 @@ public class MainController {
         model.put("dosens",dosens);
 
         return "assign-mahasiswa-list";
+    }
+
+    @GetMapping("/constraints")
+    public String constraints(ModelMap model){
+        List<Constraints> constraints = constraintsService.findAll();
+        model.put("constraints", constraints);
+
+        return "constraints";
+    }
+
+    @GetMapping("/tambah-constraints")
+    public String tambahConstraints(){
+        return "constraints-form";
+    }
+
+    @PostMapping("/tambah-constraints")
+    public String tambahConstraintsPost(){
+        return "testing";
     }
 
     // ======== FUNGSI UMUM ========

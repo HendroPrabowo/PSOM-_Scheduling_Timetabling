@@ -41,6 +41,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/ubah-jadwal" style="color: white"><b>Ubah-Jadwal</b></a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/constraints" style="color: white"><b>Constraints</b></a>
+                </li>
             </ul>
         </div>
     </nav>
