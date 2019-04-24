@@ -13,16 +13,16 @@
                 <form action="/matakuliah-save" method="post">
                     <div class="form-group">
                         <label for="inisial">Inisial</label>
-                        <input type="text" class="form-control" id="inisial" name="inisial">
+                        <input type="text" class="form-control" id="inisial" name="inisial" required>
                     </div>
                     <div class="form-group">
                         <label for="nama">Nama</label>
-                        <input type="text" class="form-control" id="nama" name="nama">
+                        <input type="text" class="form-control" id="nama" name="nama" required>
                     </div>
 
                     <div class="form-group">
                         <label for="program">Program</label>
-                        <select id="program" class="custom-select" name="program">
+                        <select id="program" class="custom-select" name="program" required>
                             <option value="Sarjana" selected>Sarjana</option>
                             <option value="Diploma">Diploma</option>
                         </select>
@@ -30,7 +30,7 @@
 
                     <div class="form-group">
                         <label for="jenis">Jenis</label>
-                        <select id="jenis" class="custom-select" name="jenis">
+                        <select id="jenis" class="custom-select" name="jenis" required>
                             <option value="T" selected>Teori</option>
                             <option value="P">Praktikum</option>
                         </select>
@@ -38,7 +38,7 @@
 
                     <div class="form-group">
                         <label for="jumlahsks">Jumlah SKS</label>
-                        <input type="number" class="form-control" id="jumlahsks" name="jumlahsks">
+                        <input type="number" class="form-control" id="jumlahsks" name="jumlahsks" required>
                     </div>
 
                     <div class="form-group">

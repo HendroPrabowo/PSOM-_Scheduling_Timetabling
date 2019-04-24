@@ -4,6 +4,7 @@ import java.io.*;
 import TugasAkhir.penjadwalan.model.*;
 import TugasAkhir.penjadwalan.service.*;
 import TugasAkhir.penjadwalan.spreadsheet.ApachePOIExcelWrite;
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -528,12 +529,29 @@ public class MainController {
     }
 
     @GetMapping("/tambah-constraints")
-    public String tambahConstraints(){
+    public String tambahConstraints(ModelMap model){
+        List<Ruangan> ruangans = ruanganService.findAll();
+        List<Dosen> dosens = dosenService.findAll();
+        List<Mahasiswa> mahasiswas = mahasiswaService.findAll();
+        String test = "Just Testing";
+
+        model.put("ruangans", ruangans);
+        model.put("dosens", dosens);
+        model.put("mahasiswas", mahasiswas);
+        model.put("test", test);
+
         return "constraints-form";
     }
 
     @PostMapping("/tambah-constraints")
-    public String tambahConstraintsPost(){
+    public String tambahConstraintsPost(@RequestParam Integer tipeConstraints, @RequestParam Integer subjek, @RequestParam Integer idDosen, @RequestParam Integer hari, @RequestParam Integer max_bekerja){
+        Constraints constraints = new Constraints();
+        constraints.setNama_constraints("D"+tipeConstraints);
+        constraints.setTipe(subjek);
+        constraints.setId_tipe(idDosen);
+        constraints.setHari(hari);
+        constraintsService.save(constraints);
+
         return "testing";
     }
 
