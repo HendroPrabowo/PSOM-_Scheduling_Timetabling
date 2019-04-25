@@ -62,4 +62,17 @@ public class PartikelService {
         }
         return null;
     }
+
+    public List<Partikel> findPartikelByHari(int hari){
+        List<Partikel> partikels = this.findAll();
+        List<Partikel> partikelsByHari = new ArrayList<>();
+
+        for (Partikel partikel : partikels){
+            if((int)partikel.getPosisihari() == hari){
+                partikelsByHari.add(partikel);
+            }
+        }
+
+        return partikelsByHari;
+    }
 }

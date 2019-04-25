@@ -44,6 +44,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/constraints" style="color: white"><b>Constraints</b></a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/testing" style="color: white"><b>Testing</b></a>
+                </li>
             </ul>
         </div>
     </nav>

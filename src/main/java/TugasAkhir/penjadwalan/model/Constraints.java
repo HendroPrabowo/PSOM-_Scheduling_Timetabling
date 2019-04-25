@@ -12,9 +12,11 @@ public class Constraints {
     private Integer id;
     private String nama_constraints;
     private Integer tipe;
-    private Integer id_tipe;
+    private String subjek;
+    private Integer id_subjek;
     private Integer hari;
     private Integer sesi;
+    private Integer max_bekerja;
 
     public Integer getId() {
         return id;
@@ -40,12 +42,20 @@ public class Constraints {
         this.tipe = tipe;
     }
 
-    public Integer getId_tipe() {
-        return id_tipe;
+    public String getSubjek() {
+        return subjek;
     }
 
-    public void setId_tipe(Integer id_tipe) {
-        this.id_tipe = id_tipe;
+    public void setSubjek(String subjek) {
+        this.subjek = subjek;
+    }
+
+    public Integer getId_subjek() {
+        return id_subjek;
+    }
+
+    public void setId_subjek(Integer id_subjek) {
+        this.id_subjek = id_subjek;
     }
 
     public Integer getHari() {
@@ -62,5 +72,13 @@ public class Constraints {
 
     public void setSesi(Integer sesi) {
         this.sesi = sesi;
+    }
+
+    public Integer getMax_bekerja() {
+        return max_bekerja;
+    }
+
+    public void setMax_bekerja(Integer max_bekerja) {
+        this.max_bekerja = max_bekerja;
     }
 }

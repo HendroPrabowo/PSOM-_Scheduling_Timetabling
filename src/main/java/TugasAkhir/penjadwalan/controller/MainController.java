@@ -12,6 +12,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -533,29 +534,95 @@ public class MainController {
         List<Ruangan> ruangans = ruanganService.findAll();
         List<Dosen> dosens = dosenService.findAll();
         List<Mahasiswa> mahasiswas = mahasiswaService.findAll();
-        String test = "Just Testing";
 
         model.put("ruangans", ruangans);
         model.put("dosens", dosens);
         model.put("mahasiswas", mahasiswas);
-        model.put("test", test);
 
         return "constraints-form";
     }
 
     @PostMapping("/tambah-constraints")
     public String tambahConstraintsPost(@RequestParam Integer tipeConstraints, @RequestParam Integer subjek, @RequestParam Integer idDosen, @RequestParam Integer hari, @RequestParam Integer max_bekerja){
-        Constraints constraints = new Constraints();
-        constraints.setNama_constraints("D"+tipeConstraints);
-        constraints.setTipe(subjek);
-        constraints.setId_tipe(idDosen);
-        constraints.setHari(hari);
-        constraintsService.save(constraints);
+
+        return "redirect:/constraints";
+    }
+
+    // Harusnya JAVA GENERIC
+    @PostMapping("/max-bekerja")
+    public String maxBekerja(@RequestParam String subjek, @RequestParam Integer hari, @RequestParam Integer max_bekerja){
+        String[] input = subjek.split(" ");
+        String tipe = input[0];
+        Integer id = Integer.parseInt(input[1]);
+
+        if(tipe.equals("dosen")){
+            Dosen dosen = dosenService.findOne(id);
+            maxBekerjaGeneric(dosen, hari, max_bekerja); // Fungsi Generic Dipanggil
+        }
+        else if(tipe.equals("mahasiswa")){
+            Mahasiswa  mahasiswa = mahasiswaService.fincOne(id);
+            maxBekerjaGeneric(mahasiswa, hari, max_bekerja);
+        }
+        else {
+            Ruangan ruangan = ruanganService.findOne(id);
+            maxBekerjaGeneric(ruangan, hari, max_bekerja);
+        }
 
         return "testing";
     }
 
-    // ======== FUNGSI UMUM ========
+    // ========= FUNGSI JAVA GENERIC =============
+    public <T> void genericDisplay (T element)
+    {
+        System.out.println("Element.getClass = "+element.getClass());
+        System.out.println("Element.getClass.getName = "+element.getClass().getName());
+        System.out.println("Element.getClass.getSimpleName = "+element.getClass().getSimpleName());
+        System.out.println("Element = "+element);
+    }
+
+    public <T> void maxBekerjaGeneric(T subjek, Integer hari, Integer max_bekerja){
+        String tipe = subjek.getClass().getSimpleName();
+
+        if(tipe.equals("Dosen")){
+            Dosen dosen = (Dosen)subjek;
+
+            Constraints constraints = new Constraints();
+            constraints.setTipe(1);
+            constraints.setNama_constraints("D1");
+            constraints.setSubjek(tipe);
+            constraints.setId_subjek(dosen.getId());
+            constraints.setHari(hari);
+            constraints.setMax_bekerja(max_bekerja);
+            constraintsService.save(constraints);
+        }
+        else if(tipe.equals("Mahasiswa")){
+            Mahasiswa mahasiswa = (Mahasiswa)subjek;
+
+            Constraints constraints = new Constraints();
+            constraints.setTipe(1);
+            constraints.setNama_constraints("D1");
+            constraints.setSubjek(tipe);
+            constraints.setId_subjek(mahasiswa.getId());
+            constraints.setHari(hari);
+            constraints.setMax_bekerja(max_bekerja);
+            constraintsService.save(constraints);
+        }
+        else {
+            Ruangan ruangan = (Ruangan)subjek;
+
+            Constraints constraints = new Constraints();
+            constraints.setTipe(1);
+            constraints.setNama_constraints("D1");
+            constraints.setSubjek(tipe);
+            constraints.setId_subjek(ruangan.getId());
+            constraints.setHari(hari);
+            constraints.setMax_bekerja(max_bekerja);
+            constraintsService.save(constraints);
+    }
+
+    }
+
+    // =========== FUNGSI UMUM =============
     public double generateNilaiPosisiHari(){
         double hasil = 0;
         hasil = 1 + Math.random()*(5);
@@ -565,6 +632,24 @@ public class MainController {
         }
 
         return hasil;
+    }
+
+    public void cekConstraintsDatabase(){
+        List<Constraints> constraints = constraintsService.findAll();
+
+        for(Constraints constraint : constraints){
+            Integer tipe = constraint.getTipe();
+            if(tipe.equals(1)){
+                // Max Bekerja
+                System.out.println(constraint.getNama_constraints()+" "+constraint.getSubjek()+" "+constraint.getId_subjek());
+            }
+            else if(tipe.equals(2)){
+                // Larangan
+            }
+            else if(tipe.equals(3)){
+                // Liburan
+            }
+        }
     }
 
     public double generateNilaiPosisiSesi(){
@@ -1453,6 +1538,69 @@ public class MainController {
 
     @GetMapping("/testing")
     public String testing(){
+        return "testing";
+    }
+
+    @GetMapping("/cek-fitness-constriants")
+    public String cekFitnessConstraints(){
+        List<Constraints> constraints = constraintsService.findAll();
+        List<Partikel> partikels = partikelService.findAll();
+
+        // Loop semua constraint yang ada di database satu per satu
+        for (Constraints constraint : constraints){
+            System.out.println("Cek constraints "+constraint.getId());
+            // Kondisi cek fitness untuk constraints max bekerja
+            if(constraint.getTipe().equals(1)){
+                System.out.println("Pengecekan Constraint MAX BEKERJA");
+                // Cek subjeknya apakah dosen, mahasiswa atau ruangan
+                // Kondisi jika subjek Dosen
+                if(constraint.getSubjek().equals("Dosen")){
+                    System.out.println("Subjek Constraint "+constraint.getSubjek());
+                    int counter = 0;
+                    // Ambil semuua partikel pada hari dalam constraints
+                    List<Partikel> partikels1 = partikelService.findPartikelByHari(constraint.getHari());
+                    System.out.println("Partikel hari "+constraint.getHari());
+                    for(Partikel partikel : partikels1){
+                        System.out.println("Partikel "+partikel.getId());
+                        Matakuliah matakuliah = matakuliahService.findOne(partikel.getIdmatakuliah());
+                        System.out.println("Matakuliah "+matakuliah.getNama());
+                        if(matakuliah.getDosen1().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen1()))){
+                                counter++;
+                        }
+                        if(matakuliah.getDosen2().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen2()))){
+                                counter++;
+                        }
+                        if(matakuliah.getDosen3().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen3()))){
+                                counter++;
+                        }
+                        if(matakuliah.getDosen4().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen4()))){
+                                counter++;
+                        }
+                    }
+                    System.out.println("Total Counter "+counter);
+                    if(counter > constraint.getMax_bekerja()){
+                        System.out.println("Terjadi pelangaran constraint MAX BEKERJA terhadap constraints "+constraint.getId());
+                    }
+                }
+                // Kondisi jika subjek Ruangan
+                else if(constraint.getSubjek() == "Ruangan"){
+
+                }
+                // Kondisi jika subjek Mahasiswa
+                else if(constraint.getSubjek() == "Mahasiswa"){
+
+                }
+            }
+            // Cek fitness untuk constraints larangan
+            else if(constraint.getTipe().equals(2)){
+
+            }
+            // Cek fitness untuk cosntraints libur
+            else if(constraint.getTipe().equals(3)){
+
+            }
+        }
+
         return "testing";
     }
 }
