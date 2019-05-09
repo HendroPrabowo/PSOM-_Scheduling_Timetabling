@@ -5,6 +5,7 @@ import TugasAkhir.penjadwalan.model.*;
 import TugasAkhir.penjadwalan.service.*;
 import TugasAkhir.penjadwalan.spreadsheet.ApachePOIExcelWrite;
 import com.sun.org.apache.xpath.internal.operations.Mod;
+import org.apache.tomcat.util.bcel.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.servlet.http.Part;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -542,13 +544,12 @@ public class MainController {
         return "constraints-form";
     }
 
-    @PostMapping("/tambah-constraints")
-    public String tambahConstraintsPost(@RequestParam Integer tipeConstraints, @RequestParam Integer subjek, @RequestParam Integer idDosen, @RequestParam Integer hari, @RequestParam Integer max_bekerja){
+//    @PostMapping("/tambah-constraints")
+//    public String tambahConstraintsPost(@RequestParam Integer tipeConstraints, @RequestParam Integer subjek, @RequestParam Integer idDosen, @RequestParam Integer hari, @RequestParam Integer max_bekerja){
+//
+//        return "redirect:/constraints";
+//    }
 
-        return "redirect:/constraints";
-    }
-
-    // Harusnya JAVA GENERIC
     @PostMapping("/max-bekerja")
     public String maxBekerja(@RequestParam String subjek, @RequestParam Integer hari, @RequestParam Integer max_bekerja){
         String[] input = subjek.split(" ");
@@ -568,7 +569,7 @@ public class MainController {
             maxBekerjaGeneric(ruangan, hari, max_bekerja);
         }
 
-        return "testing";
+        return "redirect:/constraints";
     }
 
     // ========= FUNGSI JAVA GENERIC =============
@@ -855,12 +856,15 @@ public class MainController {
             partikelService.save(partikel1);
         }
 
+        cekFitnessConstraints();
+
         System.out.println("Cek nilai fitness selesai");
     }
 
     public void resetKeterangan(List<Partikel> partikels){
         for (Partikel partikel : partikels){
             partikel.setKeterangan("");
+            partikel.setNilaifitness(1);
             partikelService.save(partikel);
         }
     }
@@ -1093,7 +1097,7 @@ public class MainController {
                     for(int k=1;k<ruangans.size()+1;k++){
                         ruangan = k;
 //                        System.out.println(hari+" "+sesi+" "+ruangan);
-                        System.out.println(partikel.getNama()+" hari:"+hari+" sesi:"+sesi+" ruangan:"+ruangan);
+//                        System.out.println(partikel.getNama()+" hari:"+hari+" sesi:"+sesi+" ruangan:"+ruangan);
                         Partikel partikel2 = partikelService.findPartikel(hari, sesi, ruangan);
                         if(
                                 partikel2 != null &&
@@ -1470,6 +1474,56 @@ public class MainController {
             pinalti++;
         }
 
+         // ======= PENGECEKAN CONSTRAINTS TAMBAHAN =========
+        /*
+        CONSTRAINTS MAX BEKERJA
+         */
+        System.out.println(partikel1.getId()+" dicoba di "+hari+" "+sesi+" "+ruangan);
+
+        List<Constraints> constraints_max_bekerja = constraintsService.getConstraintsMaxBekerjaHari(hari);
+        Matakuliah matakuliah = matakuliahService.findOne(percobaan.getIdmatakuliah());
+        if(constraints_max_bekerja.size() > 0){
+//            System.out.println("Constraints MAX BEKERJA");
+            for(Constraints constraint : constraints_max_bekerja){
+//                System.out.println("Cek constraints "+constraint.getId());
+                if(constraint.getSubjek().equals("Dosen")){
+                    Integer jumlahMengajar = 1;
+//                    System.out.println("Tipe Dosen");
+                    if(matakuliah.getDosen1().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen1()))){
+                        // Ada constraint yang membatasi dosen pada partikel yang dipilih
+//                        System.out.println("1. Constraint "+constraint.getId()+" membatasi dosen "+matakuliah.getDosen1()+" mengajar sebanyak "+constraint.getMax_bekerja());
+                        jumlahMengajar += dosenMengajarPadaHari(Integer.parseInt(matakuliah.getDosen1()), hari);
+//                        System.out.println("Jumlah dosen "+matakuliah.getDosen1()+" mengajar "+jumlahMengajar);
+                    }
+                    if(matakuliah.getDosen2().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen2()))){
+                        // Ada constraint yang membatasi dosen pada partikel yang dipilih
+//                        System.out.println("2. Constraint "+constraint.getId()+" membatasi dosen "+matakuliah.getDosen2()+" mengajar sebanyak "+constraint.getMax_bekerja());
+                        jumlahMengajar += dosenMengajarPadaHari(Integer.parseInt(matakuliah.getDosen2()), hari);
+//                        System.out.println("Jumlah dosen "+matakuliah.getDosen2()+" mengajar "+jumlahMengajar);
+                    }
+                    if(matakuliah.getDosen3().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen3()))){
+                        // Ada constraint yang membatasi dosen pada partikel yang dipilih
+//                        System.out.println("3. Constraint "+constraint.getId()+" membatasi dosen "+matakuliah.getDosen3()+" mengajar sebanyak "+constraint.getMax_bekerja());
+                        jumlahMengajar += dosenMengajarPadaHari(Integer.parseInt(matakuliah.getDosen3()), hari);
+//                        System.out.println("Jumlah dosen "+matakuliah.getDosen3()+" mengajar "+jumlahMengajar);
+                    }
+                    if(matakuliah.getDosen4().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen4()))){
+                        // Ada constraint yang membatasi dosen pada partikel yang dipilih
+//                        System.out.println("4. Constraint "+constraint.getId()+" membatasi dosen "+matakuliah.getDosen4()+" mengajar sebanyak "+constraint.getMax_bekerja());
+                        jumlahMengajar += dosenMengajarPadaHari(Integer.parseInt(matakuliah.getDosen4()), hari);
+//                        System.out.println("Jumlah dosen "+matakuliah.getDosen4()+" mengajar "+jumlahMengajar);
+                    }
+                    if(jumlahMengajar > constraint.getMax_bekerja()){
+                        keterangan = percobaan.getKeterangan();
+                        keterangan = keterangan.concat(" "+constraint.getNama_constraints());
+                        percobaan.setKeterangan(keterangan);
+                        pinalti++;
+                    }
+                    System.out.println("Dosen "+constraint.getId_subjek()+" mengajar "+jumlahMengajar+"x. Sehingga pinalti "+pinalti);
+                }
+            }
+        }
+
         // Perhitungan nilai fitness dan simpan nilai fitness
         nilaiFitness = (1.0)/(1.0+pinalti);
         percobaan.setNilaifitness(nilaiFitness);
@@ -1492,6 +1546,7 @@ public class MainController {
             partikel1.setKeterangan(keterangan);
             partikelService.save(partikel1);
         }
+
         System.out.println(percobaan.getNama()+" Melanggar : "+percobaan.getKeterangan()+" Pelanggaran : "+pinalti);
     }
 
@@ -1516,7 +1571,7 @@ public class MainController {
         return "testing";
     }
 
-    @GetMapping("/hill-climb")
+    @GetMapping("hill-climb")
     public String testHillClimb(){
         List<Partikel> partikels = partikelService.findAll();
 
@@ -1541,13 +1596,14 @@ public class MainController {
         return "testing";
     }
 
-    @GetMapping("/cek-fitness-constriants")
-    public String cekFitnessConstraints(){
+//    @GetMapping("/cek-fitness-constraints")
+    public void cekFitnessConstraints(){
         List<Constraints> constraints = constraintsService.findAll();
         List<Partikel> partikels = partikelService.findAll();
 
         // Loop semua constraint yang ada di database satu per satu
         for (Constraints constraint : constraints){
+            Integer pinalti = 0;
             System.out.println("Cek constraints "+constraint.getId());
             // Kondisi cek fitness untuk constraints max bekerja
             if(constraint.getTipe().equals(1)){
@@ -1559,27 +1615,46 @@ public class MainController {
                     int counter = 0;
                     // Ambil semuua partikel pada hari dalam constraints
                     List<Partikel> partikels1 = partikelService.findPartikelByHari(constraint.getHari());
+                    List<Partikel> partikelMelanggar = new ArrayList<>();
                     System.out.println("Partikel hari "+constraint.getHari());
                     for(Partikel partikel : partikels1){
                         System.out.println("Partikel "+partikel.getId());
                         Matakuliah matakuliah = matakuliahService.findOne(partikel.getIdmatakuliah());
                         System.out.println("Matakuliah "+matakuliah.getNama());
                         if(matakuliah.getDosen1().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen1()))){
-                                counter++;
+                            partikelMelanggar.add(partikel);
+                            counter++;
                         }
                         if(matakuliah.getDosen2().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen2()))){
-                                counter++;
+                            partikelMelanggar.add(partikel);
+                            counter++;
                         }
                         if(matakuliah.getDosen3().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen3()))){
-                                counter++;
+                            partikelMelanggar.add(partikel);
+                            counter++;
                         }
                         if(matakuliah.getDosen4().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen4()))){
-                                counter++;
+                            partikelMelanggar.add(partikel);
+                            counter++;
                         }
                     }
                     System.out.println("Total Counter "+counter);
                     if(counter > constraint.getMax_bekerja()){
-                        System.out.println("Terjadi pelangaran constraint MAX BEKERJA terhadap constraints "+constraint.getId());
+                        pinalti++;
+                        System.out.println("Constraints "+constraint.getId()+" dilanggar");
+                        System.out.println("Total pinalti "+pinalti);
+                        for(Partikel partikel : partikelMelanggar){
+                            String keterangan = partikel.getKeterangan();
+                            Double nilaiFitness = partikel.getNilaifitness();
+                            System.out.println("Partikel "+partikel.getId());
+                            System.out.println("Nilai Fitness "+nilaiFitness);
+                            Double nilaiFitnessBaru = nilaiFitness / (1.0 + pinalti);
+                            System.out.println("Nilai Fitness Baru "+nilaiFitnessBaru);
+                            keterangan = keterangan.concat(" D1:"+constraint.getId());
+                            partikel.setKeterangan(keterangan);
+                            partikel.setNilaifitness(nilaiFitnessBaru);
+                            partikelService.save(partikel);
+                        }
                     }
                 }
                 // Kondisi jika subjek Ruangan
@@ -1600,7 +1675,47 @@ public class MainController {
 
             }
         }
+    }
+
+    @GetMapping("/reset-keterangan")
+    public String resetKeteranganPartikel(){
+        List<Partikel> partikels = partikelService.findAll();
+        resetKeterangan(partikels);
 
         return "testing";
+    }
+
+    @GetMapping("/cek")
+    public String cek(){
+        Partikel partikel = partikelService.findOne(179);
+        int hari=5,ruangan=1,sesi=1;
+
+        cekNilaiFitnessPartikel(partikel, hari, sesi, ruangan);
+
+        return "testing";
+    }
+
+    public int dosenMengajarPadaHari(Integer dosen, Integer hari){
+        System.out.println(dosen+" "+hari);
+        List<Partikel> partikels = partikelService.findPartikelByHari(hari);
+        int counter = 0;
+
+        for(Partikel partikel : partikels){
+            Matakuliah matakuliah = matakuliahService.findOne(partikel.getIdmatakuliah());
+            if((matakuliah.getDosen1().length() != 0 && dosen.equals(Integer.parseInt(matakuliah.getDosen1())))){
+                counter++;
+            }
+            if((matakuliah.getDosen2().length() != 0 && dosen.equals(Integer.parseInt(matakuliah.getDosen2())))){
+                counter++;
+            }
+            if((matakuliah.getDosen3().length() != 0 && dosen.equals(Integer.parseInt(matakuliah.getDosen3())))){
+                counter++;
+            }
+            if((matakuliah.getDosen4().length() != 0 && dosen.equals(Integer.parseInt(matakuliah.getDosen4())))){
+                counter++;
+            }
+        }
+
+        return counter;
     }
 }

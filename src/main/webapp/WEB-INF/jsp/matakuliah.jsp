@@ -31,6 +31,10 @@
             <th>Asisten Dosen 1</th>
             <th>Asisten Dosen 2</th>
             <th>Asisten Dosen 3</th>
+            <th>Kelas 1</th>
+            <th>Kelas 2</th>
+            <th>Kelas 3</th>
+            <th>Kelas 4</th>
             <th>Jumlah Rombongan Kelas</th>
             <th>Action</th>
         </tr>
@@ -94,6 +98,10 @@
                     <td>${matakuliah.asistendosen1}</td>
                     <td>${matakuliah.asistendosen2}</td>
                     <td>${matakuliah.asistendosen3}</td>
+                    <td>${matakuliah.kelas1}</td>
+                    <td>${matakuliah.kelas2}</td>
+                    <td>${matakuliah.kelas3}</td>
+                    <td>${matakuliah.kelas4}</td>
                     <td class="text-center"><b>${matakuliah.jumlahrombongankelas}</b> <a href="/assign-mahasiswa-list?id=${matakuliah.id}" class="badge badge-warning badge-pill">View</a></td>
 
                     <td>

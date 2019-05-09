@@ -15,6 +15,12 @@
     <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
 
     <title>Penjadwalan</title>
+
+    <style>
+        .jumbotron{
+            margin-top: 25px;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-info">

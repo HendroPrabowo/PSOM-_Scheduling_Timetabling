@@ -32,4 +32,16 @@ public class ConstraintsService {
     public void delete(int id){
         constraintsRepository.deleteById(id);
     }
+
+    public List<Constraints> getConstraintsMaxBekerjaHari(int hari){
+        List<Constraints> constraints = findAll();
+        List<Constraints> constraints_max_bekerja_hari = new ArrayList<>();
+        for(Constraints constraint : constraints){
+            if(constraint.getTipe().equals(1) && constraint.getHari().equals(hari)){
+                constraints_max_bekerja_hari.add(constraint);
+            }
+        }
+
+        return constraints_max_bekerja_hari;
+    }
 }
