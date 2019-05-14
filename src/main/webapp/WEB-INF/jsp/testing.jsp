@@ -7,6 +7,7 @@
 
     <a href="/testing">Testing</a><br>
     <a href="/cek-fitness">Cek Nilai Fitness</a><br>
+    <a href="/cek-fitness-per-mahasiswa">Cek Nilai Fitness Per Mahasiswa</a><br>
     <a href="/hill-climb">Hill Climbing Memperbaiki Jadwal</a><br>
     <a href="/test-excel">Test Excel</a><br>
     <a href="/cek-fitness-constraints">Cek Fitness Constraints</a><br>
@@ -17,6 +18,9 @@
     <h2 class="text-center">Just testing</h2>
     <form action="/testing-hill-climbing-lo" method="post">
         <button type="submit" class="btn btn-primary">Hill Climb Testing Dengan Post</button>
+    </form>
+    <form action="/cek" method="post">
+        <button type="submit" class="btn btn-primary">Cek Fitness Per Kelas</button>
     </form>
 </div>
 

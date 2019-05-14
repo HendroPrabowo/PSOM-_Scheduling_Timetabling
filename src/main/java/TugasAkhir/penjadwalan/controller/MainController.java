@@ -77,13 +77,6 @@ public class MainController {
         return "ruangan-update";
     }
 
-    @PostMapping("/ruangan-save-update")
-    public String ruanganSaveUpdate(@ModelAttribute Ruangan ruangan, BindingResult result){
-        Ruangan ruangan1 = ruanganService.findOne(ruangan.getId());
-
-        return "redirect:/ruangan";
-    }
-
     @GetMapping("/ruangan-delete")
     public String ruanganDelete(@RequestParam int id){
         ruanganService.delete(id);
@@ -174,10 +167,18 @@ public class MainController {
     public String matakuliah(ModelMap model){
         List<Matakuliah> matakuliahs = new ArrayList<>();
         List<Dosen> dosens = new ArrayList<>();
+        List<Kelas> kelass = new ArrayList<>();
+        List<AssignMahasiswa> assignMahasiswas = new ArrayList<>();
+
         matakuliahs = matakuliahService.findAll();
         dosens = dosenService.findAll();
+        kelass = kelasService.findAll();
+        assignMahasiswas = assignMahasiswaService.findAll();
+
         model.put("matakuliahs", matakuliahs);
         model.put("dosens", dosens);
+        model.put("kelass", kelass);
+        model.put("assignMahasiswas", assignMahasiswas);
 
         return "matakuliah";
     }
@@ -185,14 +186,41 @@ public class MainController {
     @GetMapping("/matakuliah-add")
     public String matakuliahAdd(ModelMap model){
         List<Dosen> dosens = new ArrayList<>();
+        List<Kelas> kelas = new ArrayList<>();
+
         dosens = dosenService.findAll();
+        kelas = kelasService.findAll();
+
+        Collections.sort(dosens, new SortByNama());
+
         model.put("dosens", dosens);
+        model.put("kelas", kelas);
+
         return "matakuliah-form";
     }
 
     @PostMapping("/matakuliah-save")
     public String matakuliahSave(@ModelAttribute Matakuliah matakuliah, BindingResult result){
-        matakuliah.setJumlahrombongankelas(0);
+        int rombonganKelas = 0;
+        // Cari jumlah rombongan kelas
+        if(matakuliah.getKelas1().length() != 0){
+            Kelas kelas = kelasService.findOne(Integer.parseInt(matakuliah.getKelas1()));
+            rombonganKelas += kelas.getJumlah();
+        }
+        if(matakuliah.getKelas2().length() != 0){
+            Kelas kelas = kelasService.findOne(Integer.parseInt(matakuliah.getKelas2()));
+            rombonganKelas += kelas.getJumlah();
+        }
+        if(matakuliah.getKelas3().length() != 0){
+            Kelas kelas = kelasService.findOne(Integer.parseInt(matakuliah.getKelas3()));
+            rombonganKelas += kelas.getJumlah();
+        }
+        if(matakuliah.getKelas4().length() != 0){
+            Kelas kelas = kelasService.findOne(Integer.parseInt(matakuliah.getKelas4()));
+            rombonganKelas += kelas.getJumlah();
+        }
+
+        matakuliah.setJumlahrombongankelas(rombonganKelas);
         matakuliahService.save(matakuliah);
 
         return "redirect:/matakuliah";
@@ -216,7 +244,12 @@ public class MainController {
     @GetMapping("/halaman-jadwal")
     public String halamanJadwal(ModelMap model){
         List<Matakuliah> matakuliahs = matakuliahService.findAll();
+        List<Dosen> dosens = dosenService.findAll();
+        List<Kelas> kelass = kelasService.findAll();
+
         model.put("matakuliahs", matakuliahs);
+        model.put("dosens", dosens);
+        model.put("kelass", kelass);
 
         return "halaman-jadwal";
     }
@@ -274,7 +307,7 @@ public class MainController {
 
         List<Partikel> partikels = partikelService.findAll();
 
-        cekNilaiFitness(partikels, matakuliahs);
+        cekNilaiFitnessKelas(partikels, matakuliahs);
         updateGlobalBest(partikels);
         // nilai variable learning
         updatePosisi(partikels, ruangans.size());
@@ -282,108 +315,14 @@ public class MainController {
         System.out.println("Mutasi");
         mutasi(partikels, ruangans);
 
-        cekNilaiFitness(partikels, matakuliahs);
+        cekNilaiFitnessKelas(partikels, matakuliahs);
         cekKriteria(partikels, matakuliahs, ruangans, 1);
 
         // FUNGSI HILL CLIMBING
         hillClimbing(partikels);
-        cekNilaiFitness(partikels, matakuliahs);
-
-        long endTime = System.nanoTime();
-        long totalTime = endTime - startTime;
-        double second = (double)totalTime / 1000000000.0;
-        System.out.println("Waktu eksekusi : "+second);
-
-        // Mengambil nilai partikel yang baru
-//        List<Partikel> partikels3 = partikelService.findAll();
-        double nilaiFitnessBest = 0;
-        for(Partikel partikel : partikels){
-            if(partikel.getNilaifitness() == 1)
-                nilaiFitnessBest++;
-        }
-        double akurasi = nilaiFitnessBest/partikels.size()*100;
-        System.out.println("Jumlah Matakuliah "+matakuliahs.size());
-        System.out.println("Jumlah Partikel "+partikels.size());
-        System.out.println("Akurasi = "+akurasi+"%");
-
-        // Kirim variabel ke view
-        model.put("waktu", second);
-        model.put("akurasi", akurasi);
-        model.put("jumlah_matakuliah", matakuliahs.size());
-        model.put("jumlah_partikel", partikels.size());
-
-        return "generate-jadwal";
-    }
-
-    @GetMapping("/generate-jadwal")
-    public String generatePenjadwalan(ModelMap model){
-        long startTime = System.nanoTime();
-
-        // Inisialisasi variable awal
-        int nilaiPosisi = 1, iterator = 1;
-        double nilaiRandom = 0;
-
-        List<Matakuliah> matakuliahs = matakuliahService.findAll();
-        List<Ruangan> ruangans = ruanganService.findAll();
-
-        // Hapus dulu smua partikel yang lama
-        partikelService.deleteAll();
-
-        // Inisialisasi posisi ruangan
-        for(Ruangan ruangan : ruangans){
-            System.out.println("Inisialisasi posisi ruangan");
-            ruangan.setPosisi(nilaiPosisi);
-            ruanganService.save(ruangan);
-            nilaiPosisi++;
-        }
-
-        System.out.println("lewat if > 0");
-
-        System.out.println("Inisialisasi partikel");
-        for(Matakuliah matakuliah : matakuliahs){
-            for(int i=0;i<matakuliah.getJumlahsks();i++){
-                Partikel partikel = new Partikel(matakuliah.getId(), "partikel"+iterator);
-
-                // Inisialisasi nilai hari awal
-                nilaiRandom = generateNilaiPosisiHari();
-                partikel.setPosisihari(nilaiRandom);
-                partikel.setKecepatanhari(nilaiRandom);
-
-                // Inisialisasi nilai sesi awal
-                nilaiRandom = generateNilaiPosisiSesi();
-                partikel.setPosisisesi(nilaiRandom);
-                partikel.setKecepatansesi(nilaiRandom);
-
-                // Inisialisasi nilai ruangan awal
-                nilaiRandom = generateNilaiPosisiRuangan(ruangans.size());
-                partikel.setPosisiruangan(nilaiRandom);
-                partikel.setKecepatanruangan(nilaiRandom);
-
-                // Inisialisasi local best
-                partikel.setNilailocalbest(partikel.getPosisihari());
-                partikelService.save(partikel);
-                iterator++;
-            }
-        }
-
-        List<Partikel> partikels = partikelService.findAll();
-
-        System.out.println("Cek nilai fitness");
-        cekNilaiFitness(partikels, matakuliahs);
-        updateGlobalBest(partikels);
-        // nilai variable learning
-        updatePosisi(partikels, ruangans.size());
-        // mutasi
-        System.out.println("Mutasi");
-        mutasi(partikels, ruangans);
-
-        cekNilaiFitness(partikels, matakuliahs);
-
-        cekKriteria(partikels, matakuliahs, ruangans, 1);
-
-        // Fungsi Hill Climbing
-        hillClimbing(partikels);
-        cekNilaiFitness(partikels, matakuliahs);
+        cekNilaiFitnessKelas(partikels, matakuliahs);
+//        hillClimbing(partikels);
+//        cekNilaiFitnessKelas(partikels, matakuliahs);
 
         long endTime = System.nanoTime();
         long totalTime = endTime - startTime;
@@ -432,10 +371,14 @@ public class MainController {
         List<Ruangan> ruangans = ruanganService.findAll();
         List<Matakuliah> matakuliahs = matakuliahService.findAll();
         List<Dosen> dosens = dosenService.findAll();
+        List<Kelas> kelass = kelasService.findAll();
+
+        model.put("kelass", kelass);
         model.put("partikels", partikelAlreadySorted);
         model.put("ruangans", ruangans);
         model.put("matakuliahs", matakuliahs);
         model.put("dosens", dosens);
+
         return "ubah-jadwal";
     }
 
@@ -496,7 +439,8 @@ public class MainController {
             }
         }
 
-        matakuliah.setJumlahrombongankelas(assignMahasiswaService.countMahasiswa(id_matakuliah));
+        // Menghitung jumlah mahasiswa yang di assign ke mata pelajaran
+//        matakuliah.setJumlahrombongankelas(assignMahasiswaService.countMahasiswa(id_matakuliah));
         matakuliahService.save(matakuliah);
 
         return "redirect:/matakuliah";
@@ -673,8 +617,8 @@ public class MainController {
         return hasil;
     }
 
-    public void cekNilaiFitness(List<Partikel> partikels, List<Matakuliah> matakuliahs){
-        System.out.println("Cek nilai fitness");
+    public void cekNilaiFitnessKelas(List<Partikel> partikels, List<Matakuliah> matakuliahs){
+        System.out.println("Cek nilai fitness berdasarkan kelas");
         resetKeterangan(partikels);
 
         // Loop sebanyak jumlah partikel
@@ -723,58 +667,6 @@ public class MainController {
                 }
 
 
-
-                /*
-                ============= FUNGSI BARU DITAMBAHKAN =============
-                PENGECEKAN SETIAP PARTIKEL, MAHASISWA YANG JADWALNYA BERTABRAKAN
-                MAHASISWA YANG SAMA DENGAN MATAKULIAH YANG SAMA TIDAK DAPAT MASUK PADA HARI DAN SESI YANG SAMA
-                 */
-                if(
-                        partikel1.getIdmatakuliah() == partikel2.getIdmatakuliah() &&
-                        Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
-                        Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi())
-                ){
-                    List<AssignMahasiswa> assignMahasiswasPartikel1 = assignMahasiswaService.getAllMahasiswaByMatakuliahId(partikel1.getIdmatakuliah());
-                    List<AssignMahasiswa> assignMahasiswasPartikel2 = assignMahasiswaService.getAllMahasiswaByMatakuliahId(partikel2.getIdmatakuliah());
-
-                    for(AssignMahasiswa assignMahasiswaPartikel1 : assignMahasiswasPartikel1){
-                        for(AssignMahasiswa assignMahasiswaPartikel2 : assignMahasiswasPartikel2){
-                            // Jika mahasiswa di kedua partikel sama, maka terjadi pelanggaran
-                            if(assignMahasiswaPartikel1.getId_mahasiswa().equals(assignMahasiswaPartikel2.getId_mahasiswa())){
-                                keterangan = partikel1.getKeterangan();
-                                keterangan = keterangan.concat(" Matkul:"+partikel2.getId()+"=>Mahasiswa:"+assignMahasiswaPartikel1.getId_mahasiswa());
-                                partikel1.setKeterangan(keterangan);
-                                partikelService.save(partikel1);
-                                pinalti++;
-                            }
-                        }
-                    }
-                }
-                /*
-                PENGECEKAN SETIAP PARTIKEL DENGAN MATAKULIAH BERBEDA, MAHASISWA TIDAK BISA MASUK BERSAMAAN DI HARI DAN SESI YANG SAMA
-                 */
-                if(
-                        partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
-                        Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
-                        Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi())
-                ){
-                    List<AssignMahasiswa> assignMahasiswasPartikel1 = assignMahasiswaService.getAllMahasiswaByMatakuliahId(partikel1.getIdmatakuliah());
-                    List<AssignMahasiswa> assignMahasiswasPartikel2 = assignMahasiswaService.getAllMahasiswaByMatakuliahId(partikel2.getIdmatakuliah());
-
-                    for(AssignMahasiswa assignMahasiswaPartikel1 : assignMahasiswasPartikel1){
-                        for(AssignMahasiswa assignMahasiswaPartikel2 : assignMahasiswasPartikel2){
-                            // Jika mahasiswa di kedua partikel sama, maka terjadi pelanggaran
-                            if(assignMahasiswaPartikel1.getId_mahasiswa().equals(assignMahasiswaPartikel2.getId_mahasiswa())){
-                                keterangan = partikel1.getKeterangan();
-                                keterangan = keterangan.concat(" Matkul:"+partikel2.getId()+"=>Mahasiswa:"+assignMahasiswaPartikel1.getId_mahasiswa());
-                                partikel1.setKeterangan(keterangan);
-                                partikelService.save(partikel1);
-                                pinalti++;
-                            }
-                        }
-                    }
-                }
-
                 String jenis = matakuliahService.findJenisMatakuliah(partikel1.getIdmatakuliah());
                 //Pengecekan partikel, matakuliah berbeda, hari sesi sama dicek bentrok antar dosen dan asisten dosen
                 if(
@@ -796,7 +688,7 @@ public class MainController {
                         if(matakuliah1.getDosen4().length() != 0)
                             pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen4(), matakuliah2, pinaltiDosen);
                     }
-                    if(jenis.equals("P")){
+                    else if(jenis.equals("P")){
                         // Asisten Dosen 1
                         if(matakuliah1.getAsistendosen1().length() != 0)
                             pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen1(), matakuliah2, pinaltiAsistenDosen);
@@ -830,6 +722,28 @@ public class MainController {
                 }
             }
 
+            // PENGECEKAN JIKA MATAKULIAH PRAKTIKUM DIALOKASIKAN DI RUANGAN TEORI
+            String jenis = matakuliah1.getJenis();
+            if(jenis.equals("P")){
+                Ruangan ruang = ruanganService.findByPosisi((int)partikel1.getPosisiruangan());
+                if(ruang.getJenis().equals("T")){
+                    keterangan = partikel1.getKeterangan();
+                    keterangan = keterangan.concat(" RP");
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikel1);
+                    pinalti++;
+                }
+            }else{
+                Ruangan ruang = ruanganService.findByPosisi((int)partikel1.getPosisiruangan());
+                if(ruang.getJenis().equals("P")){
+                    keterangan = partikel1.getKeterangan();
+                    keterangan = keterangan.concat(" RT");
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikel1);
+                    pinalti++;
+                }
+            }
+
             // Pengecekan partikel untuk sesi ibadah
             if((int)partikel1.getPosisihari() == 5 && (int)partikel1.getPosisisesi() == 5){
                 keterangan = partikel1.getKeterangan();
@@ -849,6 +763,8 @@ public class MainController {
                 partikelService.save(partikel1);
                 pinalti++;
             }
+
+
 
             // Perhitungan nilai fitness dan simpan nilai fitness
             nilaiFitness = (1.0)/(1.0+pinalti);
@@ -1054,7 +970,7 @@ public class MainController {
                     updatePosisi(partikels, ruangans.size());
                     // mutasi
                     mutasi(partikels, ruangans);
-                    cekNilaiFitness(partikels, matakuliahs);
+                    cekNilaiFitnessKelas(partikels, matakuliahs);
                     System.out.println("Iterasi ke : "+jumlahIterasi);
                     jumlahIterasi++;
                     cekKriteria(partikels, matakuliahs, ruangans, jumlahIterasi);
@@ -1087,6 +1003,9 @@ public class MainController {
             if(partikel.getNilaifitness() != 1)
                 partikelMelanggar.add(partikel);
         }
+        for(Partikel partikel : partikelMelanggar){
+            System.out.println(partikel.getNama());
+        }
         // Looping partikel yang melanggar ke hari, sesi, ruangan lain
         for(Partikel partikel : partikelMelanggar){
             int hari = 0, sesi = 0, ruangan = 0, loop = 0;
@@ -1107,7 +1026,7 @@ public class MainController {
                             loop = 1;
                             break;
                         }else {
-                            cekNilaiFitnessPartikel(partikel, i, j, k);
+                            cekNilaiFitnessPartikelPerKelas(partikel, i, j, k);
                         }
                     }
                     if(loop != 0)
@@ -1313,7 +1232,12 @@ public class MainController {
         return nilaiFitness;
     }
 
-    public void cekNilaiFitnessPartikel(Partikel partikel1, int hari, int sesi, int ruangan){
+    public void cekNilaiFitnessPartikelPerKelas(Partikel partikel1, int hari, int sesi, int ruangan){
+
+        if(((int)partikel1.getNilaifitness()) == 1){
+            return;
+        }
+
         double nilaiFitness = 0, pinalti = 0, pinaltiDosen = 0, pinaltiAsistenDosen = 0;
         String keterangan = null;
         List<Partikel> partikels = partikelService.findAll();
@@ -1341,12 +1265,6 @@ public class MainController {
         percobaan.setNilaiglobalbest(partikel1.getNilaiglobalbest());
         percobaan.setKeterangan("");
 
-        /*
-        =========== FUNGSI BARU =============
-         */
-        // AMBIL SEMUA MAHASISWA DI PARTIKEL 1
-        List<AssignMahasiswa> assignMahasiswasPartikel1 = assignMahasiswaService.getAllMahasiswaByMatakuliahId(partikel1.getIdmatakuliah());
-
         for(Partikel partikel : partikels){
             String jenis = matakuliahService.findJenisMatakuliah(percobaan.getIdmatakuliah());
             Matakuliah matakuliah1 = matakuliahService.findOne(percobaan.getIdmatakuliah());
@@ -1355,8 +1273,8 @@ public class MainController {
             // Pengecekan partikel, matakuliah yang sama tidak bisa dialokasikan pada hari dan sesi yang sama
             if(
                     percobaan.getIdmatakuliah() == partikel.getIdmatakuliah() &&
-                    Math.floor(percobaan.getPosisihari()) == Math.floor(partikel.getPosisihari()) &&
-                    Math.floor(percobaan.getPosisisesi()) == Math.floor(partikel.getPosisisesi())
+                            Math.floor(percobaan.getPosisihari()) == Math.floor(partikel.getPosisihari()) &&
+                            Math.floor(percobaan.getPosisisesi()) == Math.floor(partikel.getPosisisesi())
             ){
                 keterangan = percobaan.getKeterangan();
                 keterangan = keterangan.concat(" C1:"+partikel.getId());
@@ -1367,8 +1285,8 @@ public class MainController {
             // Pengecekan partikel, matakuliah berbeda, hari sesi sama dicek bentrok antar dosen dan asisten dosen
             if(
                     percobaan.getIdmatakuliah() != partikel.getIdmatakuliah() &&
-                    (int)percobaan.getPosisihari() == (int)partikel.getPosisihari() &&
-                    (int)percobaan.getPosisisesi() == (int)partikel.getPosisisesi()
+                            (int)percobaan.getPosisihari() == (int)partikel.getPosisihari() &&
+                            (int)percobaan.getPosisisesi() == (int)partikel.getPosisisesi()
             ){
                 if(jenis.equals("T")){
                     // Dosen 1
@@ -1394,46 +1312,6 @@ public class MainController {
                     // Asisten Dosen 3
                     if(matakuliah1.getAsistendosen3().length() != 0)
                         pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen3(), matakuliah2, pinaltiAsistenDosen);
-                }
-            }
-
-            /*
-            =========== FUNGSI BARU =============
-             */
-            // AMBIL SEMUA MAHASISWA DI PARTIKEL 2
-            List<AssignMahasiswa> assignMahasiswasPartikel = assignMahasiswaService.getAllMahasiswaByMatakuliahId(matakuliah2.getId());
-            // PENGECEKAN APAKAH PADA MATAKULIAH YANG SAMA DAN SESI YANG SAMA MAHASISWA BERTABRAKAN JADWAL
-            if(
-                    percobaan.getIdmatakuliah() == partikel.getIdmatakuliah() &&
-                    Math.floor(percobaan.getPosisihari()) == Math.floor(partikel.getPosisihari()) &&
-                    Math.floor(percobaan.getPosisisesi()) == Math.floor(partikel.getPosisisesi())
-            ){
-                for(AssignMahasiswa assignMahasiswaPartikel1 : assignMahasiswasPartikel1){
-                    for(AssignMahasiswa assignMahasiswaPartikel : assignMahasiswasPartikel){
-                        if(assignMahasiswaPartikel1.getId_mahasiswa().equals(assignMahasiswaPartikel.getId_mahasiswa())){
-                            keterangan = percobaan.getKeterangan();
-                            keterangan = keterangan.concat(" Matkul:"+partikel.getId()+"=>Mahasiswa:"+assignMahasiswaPartikel1.getId_mahasiswa());
-                            percobaan.setKeterangan(keterangan);
-                            pinalti++;
-                        }
-                    }
-                }
-            }
-            // PENGECEKAN PADA MATAKULIAH BERBEDA PADA HARI, SESI YANG SAMA APAKAH MAHASISWA BERTABRAKAN
-            if(
-                    percobaan.getIdmatakuliah() != partikel.getIdmatakuliah() &&
-                    (int)percobaan.getPosisihari() == (int)partikel.getPosisihari() &&
-                    (int)percobaan.getPosisisesi() == (int)partikel.getPosisisesi()
-            ){
-                for(AssignMahasiswa assignMahasiswaPartikel1 : assignMahasiswasPartikel1){
-                    for(AssignMahasiswa assignMahasiswaPartikel : assignMahasiswasPartikel){
-                        if(assignMahasiswaPartikel1.getId_mahasiswa().equals(assignMahasiswaPartikel.getId_mahasiswa())){
-                            keterangan = percobaan.getKeterangan();
-                            keterangan = keterangan.concat(" Matkul:"+partikel.getId()+"=>Mahasiswa:"+assignMahasiswaPartikel1.getId_mahasiswa());
-                            percobaan.setKeterangan(keterangan);
-                            pinalti++;
-                        }
-                    }
                 }
             }
 
@@ -1474,7 +1352,7 @@ public class MainController {
             pinalti++;
         }
 
-         // ======= PENGECEKAN CONSTRAINTS TAMBAHAN =========
+        // ======= PENGECEKAN CONSTRAINTS TAMBAHAN =========
         /*
         CONSTRAINTS MAX BEKERJA
          */
@@ -1524,9 +1402,31 @@ public class MainController {
             }
         }
 
+        // PENGECEKAN JIKA MATAKULIAH PRAKTIKUM DIALOKASIKAN DI RUANGAN TEORI
+        String jenis = matakuliahService.findJenisMatakuliah(percobaan.getIdmatakuliah());
+        if(jenis.equals("P")){
+            Ruangan ruang = ruanganService.findByPosisi((int)percobaan.getPosisiruangan());
+            if(ruang.getJenis().equals("T")){
+                keterangan = percobaan.getKeterangan();
+                keterangan = keterangan.concat(" RP");
+                percobaan.setKeterangan(keterangan);
+                pinalti++;
+            }
+        }else{
+            Ruangan ruang = ruanganService.findByPosisi((int)percobaan.getPosisiruangan());
+            if(ruang.getJenis().equals("P")){
+                keterangan = percobaan.getKeterangan();
+                keterangan = keterangan.concat(" RT");
+                percobaan.setKeterangan(keterangan);
+                pinalti++;
+            }
+        }
+
         // Perhitungan nilai fitness dan simpan nilai fitness
         nilaiFitness = (1.0)/(1.0+pinalti);
         percobaan.setNilaifitness(nilaiFitness);
+
+        System.out.println(partikel1.getNama()+" "+hari+" "+sesi+" "+ruangan+" NF:"+nilaiFitness+" Ket:"+percobaan.getKeterangan());
 
         if(percobaan.getNilaifitness() == 1){
             partikel1.setPosisihari(hari);
@@ -1547,7 +1447,6 @@ public class MainController {
             partikelService.save(partikel1);
         }
 
-        System.out.println(percobaan.getNama()+" Melanggar : "+percobaan.getKeterangan()+" Pelanggaran : "+pinalti);
     }
 
     @PostMapping("/testing-hill-climbing-lo")
@@ -1564,14 +1463,22 @@ public class MainController {
     public String cekFitness(){
         List<Partikel> partikels = partikelService.findAll();
         List<Matakuliah> matakuliahs = matakuliahService.findAll();
-        List<Ruangan> ruangans = ruanganService.findAll();
 
-        cekNilaiFitness(partikels, matakuliahs);
+        cekNilaiFitnessKelas(partikels, matakuliahs);
 
         return "testing";
     }
 
-    @GetMapping("hill-climb")
+    @GetMapping("/cek-fitness-per-mahasiswa")
+    public String cekFitnessPerMahasiswa(){
+        List<Partikel> partikels = partikelService.findAll();
+        List<Matakuliah> matakuliahs = matakuliahService.findAll();
+
+        cekNilaiFitnessPerMahasiswa(partikels, matakuliahs);
+        return "testing";
+    }
+
+    @GetMapping("/hill-climb")
     public String testHillClimb(){
         List<Partikel> partikels = partikelService.findAll();
 
@@ -1690,7 +1597,7 @@ public class MainController {
         Partikel partikel = partikelService.findOne(179);
         int hari=5,ruangan=1,sesi=1;
 
-        cekNilaiFitnessPartikel(partikel, hari, sesi, ruangan);
+        cekNilaiFitnessPartikelPerKelas(partikel, hari, sesi, ruangan);
 
         return "testing";
     }
@@ -1717,5 +1624,570 @@ public class MainController {
         }
 
         return counter;
+    }
+
+    @PostMapping("/generate-jadwal-per-mahasiswa")
+    public String generateJadwalPerMahasiswa(ModelMap model){
+        long startTime = System.nanoTime();
+
+        // Inisialisasi variable awal
+        int nilaiPosisi = 1, iterator = 1;
+        double nilaiRandom = 0;
+
+        List<Matakuliah> matakuliahs = matakuliahService.findAll();
+        List<Ruangan> ruangans = ruanganService.findAll();
+
+        // Hapus dulu smua partikel yang lama
+        partikelService.deleteAll();
+
+        // Inisialisasi posisi ruangan
+        for(Ruangan ruangan : ruangans){
+            System.out.println("Inisialisasi posisi ruangan");
+            ruangan.setPosisi(nilaiPosisi);
+            ruanganService.save(ruangan);
+            nilaiPosisi++;
+        }
+
+        System.out.println("lewat if > 0");
+
+        System.out.println("Inisialisasi partikel");
+        for(Matakuliah matakuliah : matakuliahs){
+            for(int i=0;i<matakuliah.getJumlahsks();i++){
+                Partikel partikel = new Partikel(matakuliah.getId(), "partikel"+iterator);
+
+                // Inisialisasi nilai hari awal
+                nilaiRandom = generateNilaiPosisiHari();
+                partikel.setPosisihari(nilaiRandom);
+                partikel.setKecepatanhari(nilaiRandom);
+
+                // Inisialisasi nilai sesi awal
+                nilaiRandom = generateNilaiPosisiSesi();
+                partikel.setPosisisesi(nilaiRandom);
+                partikel.setKecepatansesi(nilaiRandom);
+
+                // Inisialisasi nilai ruangan awal
+                nilaiRandom = generateNilaiPosisiRuangan(ruangans.size());
+                partikel.setPosisiruangan(nilaiRandom);
+                partikel.setKecepatanruangan(nilaiRandom);
+
+                // Inisialisasi local best
+                partikel.setNilailocalbest(partikel.getPosisihari());
+                partikelService.save(partikel);
+                iterator++;
+            }
+        }
+
+        List<Partikel> partikels = partikelService.findAll();
+
+        cekNilaiFitnessPerMahasiswa(partikels, matakuliahs);
+        updateGlobalBest(partikels);
+        // nilai variable learning
+        updatePosisi(partikels, ruangans.size());
+        // mutasi
+        System.out.println("Mutasi");
+        mutasi(partikels, ruangans);
+
+        cekNilaiFitnessPerMahasiswa(partikels, matakuliahs);
+        cekKriteria(partikels, matakuliahs, ruangans, 1);
+
+        // FUNGSI HILL CLIMBING
+        hillClimbingPerMahasiswa(partikels);
+        cekNilaiFitnessPerMahasiswa(partikels, matakuliahs);
+
+        long endTime = System.nanoTime();
+        long totalTime = endTime - startTime;
+        double second = (double)totalTime / 1000000000.0;
+        System.out.println("Waktu eksekusi : "+second);
+
+        // Mengambil nilai partikel yang baru
+//        List<Partikel> partikels3 = partikelService.findAll();
+        double nilaiFitnessBest = 0;
+        for(Partikel partikel : partikels){
+            if(partikel.getNilaifitness() == 1)
+                nilaiFitnessBest++;
+        }
+        double akurasi = nilaiFitnessBest/partikels.size()*100;
+        System.out.println("Jumlah Matakuliah "+matakuliahs.size());
+        System.out.println("Jumlah Partikel "+partikels.size());
+        System.out.println("Akurasi = "+akurasi+"%");
+
+        // Kirim variabel ke view
+        model.put("waktu", second);
+        model.put("akurasi", akurasi);
+        model.put("jumlah_matakuliah", matakuliahs.size());
+        model.put("jumlah_partikel", partikels.size());
+
+        return "generate-jadwal";
+    }
+
+    public void cekNilaiFitnessPerMahasiswa(List<Partikel> partikels, List<Matakuliah> matakuliahs){
+        System.out.println("Cek nilai fitness per Mahasiswa");
+        resetKeterangan(partikels);
+
+        // Loop sebanyak jumlah partikel
+        for(int i=0;i<partikels.size();i++){
+            double nilaiFitness = 0, pinalti = 0, pinaltiDosen = 0, pinaltiAsistenDosen = 0;
+            String keterangan = null;
+
+            // Partikel1 == i
+            Partikel partikel1 = partikels.get(i);
+            Matakuliah matakuliah1 = matakuliahService.findOne(partikel1.getIdmatakuliah());
+
+            for(int j=0;j<partikels.size();j++){
+                if(i==j || j==i){
+                    continue;
+                }
+
+                // Partikel2 == j
+                Partikel partikel2 = partikels.get(j);
+                Matakuliah matakuliah2 = matakuliahService.findOne(partikel2.getIdmatakuliah());
+
+                // Pengecekan partikel, matakuliah yang sama tidak bisa dialokasikan pada hari dan sesi yang sama
+                if(
+                        partikel1.getIdmatakuliah() == partikel2.getIdmatakuliah() &&
+                                Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
+                                Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi())
+                ){
+                    keterangan = partikel1.getKeterangan();
+                    keterangan = keterangan.concat(" C1:"+partikel2.getId());
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikel1);
+                    pinalti++;
+                }
+
+                // Pengecekan partikel, matakuliah berbeda tidak dapat berada pada hari, sesi dan ruangan yang sama
+                if(
+                        partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
+                                Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
+                                Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi()) &&
+                                Math.floor(partikel1.getPosisiruangan()) == Math.floor(partikel2.getPosisiruangan())
+                ){
+                    keterangan = partikel1.getKeterangan();
+                    keterangan = keterangan.concat(" C2:"+partikel2.getId());
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikel1);
+                    pinalti++;
+                }
+
+
+
+                /*
+                ============= FUNGSI BARU DITAMBAHKAN =============
+                PENGECEKAN SETIAP PARTIKEL, MAHASISWA YANG JADWALNYA BERTABRAKAN
+                MAHASISWA YANG SAMA DENGAN MATAKULIAH YANG SAMA TIDAK DAPAT MASUK PADA HARI DAN SESI YANG SAMA
+                 */
+                if(
+                        partikel1.getIdmatakuliah() == partikel2.getIdmatakuliah() &&
+                        Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
+                        Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi())
+                ){
+                    List<AssignMahasiswa> assignMahasiswasPartikel1 = assignMahasiswaService.getAllMahasiswaByMatakuliahId(partikel1.getIdmatakuliah());
+                    List<AssignMahasiswa> assignMahasiswasPartikel2 = assignMahasiswaService.getAllMahasiswaByMatakuliahId(partikel2.getIdmatakuliah());
+
+                    for(AssignMahasiswa assignMahasiswaPartikel1 : assignMahasiswasPartikel1){
+                        for(AssignMahasiswa assignMahasiswaPartikel2 : assignMahasiswasPartikel2){
+                            // Jika mahasiswa di kedua partikel sama, maka terjadi pelanggaran
+                            if(assignMahasiswaPartikel1.getId_mahasiswa().equals(assignMahasiswaPartikel2.getId_mahasiswa())){
+                                keterangan = partikel1.getKeterangan();
+                                keterangan = keterangan.concat(" Matkul:"+partikel2.getId()+"=>Mahasiswa:"+assignMahasiswaPartikel1.getId_mahasiswa());
+                                partikel1.setKeterangan(keterangan);
+                                partikelService.save(partikel1);
+                                pinalti++;
+                            }
+                        }
+                    }
+                }
+                /*
+                PENGECEKAN SETIAP PARTIKEL DENGAN MATAKULIAH BERBEDA, MAHASISWA TIDAK BISA MASUK BERSAMAAN DI HARI DAN SESI YANG SAMA
+                 */
+                if(
+                        partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
+                        Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
+                        Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi())
+                ){
+                    List<AssignMahasiswa> assignMahasiswasPartikel1 = assignMahasiswaService.getAllMahasiswaByMatakuliahId(partikel1.getIdmatakuliah());
+                    List<AssignMahasiswa> assignMahasiswasPartikel2 = assignMahasiswaService.getAllMahasiswaByMatakuliahId(partikel2.getIdmatakuliah());
+
+                    for(AssignMahasiswa assignMahasiswaPartikel1 : assignMahasiswasPartikel1){
+                        for(AssignMahasiswa assignMahasiswaPartikel2 : assignMahasiswasPartikel2){
+                            // Jika mahasiswa di kedua partikel sama, maka terjadi pelanggaran
+                            if(assignMahasiswaPartikel1.getId_mahasiswa().equals(assignMahasiswaPartikel2.getId_mahasiswa())){
+                                keterangan = partikel1.getKeterangan();
+                                keterangan = keterangan.concat(" Matkul:"+partikel2.getId()+"=>Mahasiswa:"+assignMahasiswaPartikel1.getId_mahasiswa());
+                                partikel1.setKeterangan(keterangan);
+                                partikelService.save(partikel1);
+                                pinalti++;
+                            }
+                        }
+                    }
+                }
+
+                String jenis = matakuliahService.findJenisMatakuliah(partikel1.getIdmatakuliah());
+                //Pengecekan partikel, matakuliah berbeda, hari sesi sama dicek bentrok antar dosen dan asisten dosen
+                if(
+                        partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
+                                (int)partikel1.getPosisihari() == (int)partikel2.getPosisihari() &&
+                                (int)partikel1.getPosisisesi() == (int)partikel2.getPosisisesi()
+                ){
+                    if(jenis.equals("T")){
+                        // Dosen 1
+                        if(matakuliah1.getDosen1().length() != 0)
+                            pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen1(), matakuliah2, pinaltiDosen);
+                        // Dosen 2
+                        if(matakuliah1.getDosen2().length() != 0)
+                            pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen2(), matakuliah2, pinaltiDosen);
+                        // Dosen 3
+                        if(matakuliah1.getDosen3().length() != 0)
+                            pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen3(), matakuliah2, pinaltiDosen);
+                        // Dosen 4
+                        if(matakuliah1.getDosen4().length() != 0)
+                            pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen4(), matakuliah2, pinaltiDosen);
+                    }
+                    if(jenis.equals("P")){
+                        // Asisten Dosen 1
+                        if(matakuliah1.getAsistendosen1().length() != 0)
+                            pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen1(), matakuliah2, pinaltiAsistenDosen);
+                        // Asisten Dosen 2
+                        if(matakuliah1.getAsistendosen2().length() != 0)
+                            pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen2(), matakuliah2, pinaltiAsistenDosen);
+                        // Asisten Dosen 3
+                        if(matakuliah1.getAsistendosen3().length() != 0)
+                            pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen3(), matakuliah2, pinaltiAsistenDosen);
+                    }
+                }
+
+                // Perhitungan pinalti dosen dan asisten dosen
+                if(pinaltiDosen!=0){
+                    keterangan = partikels.get(i).getKeterangan();
+                    keterangan = keterangan.concat(" C5:"+partikel2.getId());
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikels.get(i));
+                    // reset nilai pinalti dosen
+                    pinaltiDosen = 0;
+                    pinalti++;
+                }
+                if(pinaltiAsistenDosen != 0){
+                    keterangan = partikel1.getKeterangan();
+                    keterangan = keterangan.concat(" C6:"+partikel2.getId());
+                    partikel1.setKeterangan(keterangan);
+                    partikelService.save(partikel1);
+                    // reset nilai pinaltiAsistenDosen
+                    pinaltiAsistenDosen = 0;
+                    pinalti++;
+                }
+            }
+
+            // Pengecekan partikel untuk sesi ibadah
+            if((int)partikel1.getPosisihari() == 5 && (int)partikel1.getPosisisesi() == 5){
+                keterangan = partikel1.getKeterangan();
+                keterangan = keterangan.concat(" C3");
+                partikel1.setKeterangan(keterangan);
+                partikelService.save(partikel1);
+                pinalti++;
+            }
+
+            // Cek rombongan kelas dengan kapasitas ruangan
+            Integer rombongan = matakuliah1.getJumlahrombongankelas();
+            Ruangan ruangan = ruanganService.findByPosisi((int)Math.floor(partikel1.getPosisiruangan()));
+            if(rombongan > ruangan.getKapasitas()){
+                keterangan = partikel1.getKeterangan();
+                keterangan = keterangan.concat(" C4");
+                partikel1.setKeterangan(keterangan);
+                partikelService.save(partikel1);
+                pinalti++;
+            }
+
+            // Perhitungan nilai fitness dan simpan nilai fitness
+            nilaiFitness = (1.0)/(1.0+pinalti);
+            partikel1.setNilaifitness(nilaiFitness);
+            partikelService.save(partikel1);
+        }
+
+        cekFitnessConstraints();
+
+        System.out.println("Cek nilai fitness selesai");
+    }
+
+    public void hillClimbingPerMahasiswa(List<Partikel> partikels){
+        System.out.println("Hill Climbing Start");
+        List<Ruangan> ruangans = ruanganService.findAll();
+        List<Partikel> partikelMelanggar = new ArrayList<>();
+
+        // Mengambil partikel yang masih melanggar
+        for(Partikel partikel : partikels){
+            if(partikel.getNilaifitness() != 1)
+                partikelMelanggar.add(partikel);
+        }
+        // Looping partikel yang melanggar ke hari, sesi, ruangan lain
+        for(Partikel partikel : partikelMelanggar){
+            int hari = 0, sesi = 0, ruangan = 0, loop = 0;
+            for(int i=1;i<6;i++){
+                hari = i;
+                for(int j=1;j<9;j++){
+                    sesi = j;
+                    for(int k=1;k<ruangans.size()+1;k++){
+                        ruangan = k;
+//                        System.out.println(hari+" "+sesi+" "+ruangan);
+//                        System.out.println(partikel.getNama()+" hari:"+hari+" sesi:"+sesi+" ruangan:"+ruangan);
+                        Partikel partikel2 = partikelService.findPartikel(hari, sesi, ruangan);
+                        if(
+                                partikel2 != null &&
+                                        partikel.getId() == partikel2.getId() &&
+                                        partikel2.getNilaifitness() == 1
+                        ){
+                            loop = 1;
+                            break;
+                        }else {
+                            cekNilaiFitnessPartikelPerMahasiswa(partikel, i, j, k);
+                        }
+                    }
+                    if(loop != 0)
+                        break;
+                }
+                if(loop != 0)
+                    break;
+            }
+            if(loop != 0)
+                break;
+        }
+
+        System.out.println("Hill Climbing Selesai");
+    }
+
+    public void cekNilaiFitnessPartikelPerMahasiswa(Partikel partikel1, int hari, int sesi, int ruangan){
+        double nilaiFitness = 0, pinalti = 0, pinaltiDosen = 0, pinaltiAsistenDosen = 0;
+        String keterangan = null;
+        List<Partikel> partikels = partikelService.findAll();
+
+        Partikel partikel2 = partikelService.findPartikel(hari, sesi, ruangan);
+        // Slotnya kosong
+        if(partikel2 != null){
+            if(partikel1.getId() == partikel2.getId() && partikel1.getNilaifitness() == 1){
+                return;
+            }
+            System.out.println("partikel2 tidak kosong");
+            return;
+        }
+
+        // inisialisasi partikel percobaan
+        Partikel percobaan = new Partikel(partikel1.getIdmatakuliah(), partikel1.getNama()+"Coba");
+        percobaan.setPosisihari(hari);
+        percobaan.setPosisisesi(sesi);
+        percobaan.setPosisiruangan(ruangan);
+        percobaan.setKecepatanhari(partikel1.getKecepatanhari());
+        percobaan.setKecepatansesi(partikel1.getKecepatansesi());
+        percobaan.setKecepatanruangan(partikel1.getKecepatanruangan());
+        percobaan.setNilaifitness(partikel1.getNilaifitness());
+        percobaan.setNilailocalbest(partikel1.getNilailocalbest());
+        percobaan.setNilaiglobalbest(partikel1.getNilaiglobalbest());
+        percobaan.setKeterangan("");
+
+        /*
+        =========== FUNGSI BARU =============
+         */
+        // AMBIL SEMUA MAHASISWA DI PARTIKEL 1
+        List<AssignMahasiswa> assignMahasiswasPartikel1 = assignMahasiswaService.getAllMahasiswaByMatakuliahId(partikel1.getIdmatakuliah());
+
+        for(Partikel partikel : partikels){
+            String jenis = matakuliahService.findJenisMatakuliah(percobaan.getIdmatakuliah());
+            Matakuliah matakuliah1 = matakuliahService.findOne(percobaan.getIdmatakuliah());
+            Matakuliah matakuliah2 = matakuliahService.findOne(partikel.getIdmatakuliah());
+
+            // Pengecekan partikel, matakuliah yang sama tidak bisa dialokasikan pada hari dan sesi yang sama
+            if(
+                    percobaan.getIdmatakuliah() == partikel.getIdmatakuliah() &&
+                            Math.floor(percobaan.getPosisihari()) == Math.floor(partikel.getPosisihari()) &&
+                            Math.floor(percobaan.getPosisisesi()) == Math.floor(partikel.getPosisisesi())
+            ){
+                keterangan = percobaan.getKeterangan();
+                keterangan = keterangan.concat(" C1:"+partikel.getId());
+                percobaan.setKeterangan(keterangan);
+                pinalti++;
+            }
+
+            // Pengecekan partikel, matakuliah berbeda, hari sesi sama dicek bentrok antar dosen dan asisten dosen
+            if(
+                    percobaan.getIdmatakuliah() != partikel.getIdmatakuliah() &&
+                            (int)percobaan.getPosisihari() == (int)partikel.getPosisihari() &&
+                            (int)percobaan.getPosisisesi() == (int)partikel.getPosisisesi()
+            ){
+                if(jenis.equals("T")){
+                    // Dosen 1
+                    if(matakuliah1.getDosen1().length() != 0)
+                        pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen1(), matakuliah2, pinaltiDosen);
+                    // Dosen 2
+                    if(matakuliah1.getDosen2().length() != 0)
+                        pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen2(), matakuliah2, pinaltiDosen);
+                    // Dosen 3
+                    if(matakuliah1.getDosen3().length() != 0)
+                        pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen3(), matakuliah2, pinaltiDosen);
+                    // Dosen 4
+                    if(matakuliah1.getDosen4().length() != 0)
+                        pinaltiDosen = cekPinaltiDosen(matakuliah1.getDosen4(), matakuliah2, pinaltiDosen);
+                }
+                if(jenis.equals("P")){
+                    // Asisten Dosen 1
+                    if(matakuliah1.getAsistendosen1().length() != 0)
+                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen1(), matakuliah2, pinaltiAsistenDosen);
+                    // Asisten Dosen 2
+                    if(matakuliah1.getAsistendosen2().length() != 0)
+                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen2(), matakuliah2, pinaltiAsistenDosen);
+                    // Asisten Dosen 3
+                    if(matakuliah1.getAsistendosen3().length() != 0)
+                        pinaltiAsistenDosen = cekPinaltiAsistenDosen(matakuliah1.getAsistendosen3(), matakuliah2, pinaltiAsistenDosen);
+                }
+            }
+
+            /*
+            =========== FUNGSI BARU =============
+             */
+            // AMBIL SEMUA MAHASISWA DI PARTIKEL 2
+            List<AssignMahasiswa> assignMahasiswasPartikel = assignMahasiswaService.getAllMahasiswaByMatakuliahId(matakuliah2.getId());
+            // PENGECEKAN APAKAH PADA MATAKULIAH YANG SAMA DAN SESI YANG SAMA MAHASISWA BERTABRAKAN JADWAL
+            if(
+                    percobaan.getIdmatakuliah() == partikel.getIdmatakuliah() &&
+                            Math.floor(percobaan.getPosisihari()) == Math.floor(partikel.getPosisihari()) &&
+                            Math.floor(percobaan.getPosisisesi()) == Math.floor(partikel.getPosisisesi())
+            ){
+                for(AssignMahasiswa assignMahasiswaPartikel1 : assignMahasiswasPartikel1){
+                    for(AssignMahasiswa assignMahasiswaPartikel : assignMahasiswasPartikel){
+                        if(assignMahasiswaPartikel1.getId_mahasiswa().equals(assignMahasiswaPartikel.getId_mahasiswa())){
+                            keterangan = percobaan.getKeterangan();
+                            keterangan = keterangan.concat(" Matkul:"+partikel.getId()+"=>Mahasiswa:"+assignMahasiswaPartikel1.getId_mahasiswa());
+                            percobaan.setKeterangan(keterangan);
+                            pinalti++;
+                        }
+                    }
+                }
+            }
+            // PENGECEKAN PADA MATAKULIAH BERBEDA PADA HARI, SESI YANG SAMA APAKAH MAHASISWA BERTABRAKAN
+            if(
+                    percobaan.getIdmatakuliah() != partikel.getIdmatakuliah() &&
+                            (int)percobaan.getPosisihari() == (int)partikel.getPosisihari() &&
+                            (int)percobaan.getPosisisesi() == (int)partikel.getPosisisesi()
+            ){
+                for(AssignMahasiswa assignMahasiswaPartikel1 : assignMahasiswasPartikel1){
+                    for(AssignMahasiswa assignMahasiswaPartikel : assignMahasiswasPartikel){
+                        if(assignMahasiswaPartikel1.getId_mahasiswa().equals(assignMahasiswaPartikel.getId_mahasiswa())){
+                            keterangan = percobaan.getKeterangan();
+                            keterangan = keterangan.concat(" Matkul:"+partikel.getId()+"=>Mahasiswa:"+assignMahasiswaPartikel1.getId_mahasiswa());
+                            percobaan.setKeterangan(keterangan);
+                            pinalti++;
+                        }
+                    }
+                }
+            }
+
+            // Perhitungan pinalti
+            if(pinaltiDosen!=0){
+                keterangan = percobaan.getKeterangan();
+                keterangan = keterangan.concat(" C5:"+partikel.getId());
+                percobaan.setKeterangan(keterangan);
+                // reset nilai pinalti dosen
+                pinaltiDosen = 0;
+                pinalti++;
+            }
+            if(pinaltiAsistenDosen != 0){
+                keterangan = percobaan.getKeterangan();
+                keterangan = keterangan.concat(" C6:"+partikel.getId());
+                percobaan.setKeterangan(keterangan);
+                // reset nilai pinaltiAsistenDosen
+                pinaltiAsistenDosen = 0;
+                pinalti++;
+            }
+        }
+
+        // Pengecekan partikel untuk sesi ibadah
+        if((int)percobaan.getPosisihari() == 5 && (int)percobaan.getPosisisesi() == 5){
+            keterangan = percobaan.getKeterangan();
+            keterangan = keterangan.concat(" C3");
+            percobaan.setKeterangan(keterangan);
+            pinalti++;
+        }
+
+        // Cek rombongan kelas dengan kapasitas ruangan
+        int rombongan = matakuliahService.findOne(percobaan.getIdmatakuliah()).getJumlahrombongankelas();
+        Ruangan kelas = ruanganService.findByPosisi(ruangan);
+        if(rombongan > kelas.getKapasitas()){
+            keterangan = percobaan.getKeterangan();
+            keterangan = keterangan.concat(" C4");
+            percobaan.setKeterangan(keterangan);
+            pinalti++;
+        }
+
+        // ======= PENGECEKAN CONSTRAINTS TAMBAHAN =========
+        /*
+        CONSTRAINTS MAX BEKERJA
+         */
+//        System.out.println(partikel1.getId()+" dicoba di "+hari+" "+sesi+" "+ruangan);
+
+        List<Constraints> constraints_max_bekerja = constraintsService.getConstraintsMaxBekerjaHari(hari);
+        Matakuliah matakuliah = matakuliahService.findOne(percobaan.getIdmatakuliah());
+        if(constraints_max_bekerja.size() > 0){
+//            System.out.println("Constraints MAX BEKERJA");
+            for(Constraints constraint : constraints_max_bekerja){
+//                System.out.println("Cek constraints "+constraint.getId());
+                if(constraint.getSubjek().equals("Dosen")){
+                    Integer jumlahMengajar = 1;
+//                    System.out.println("Tipe Dosen");
+                    if(matakuliah.getDosen1().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen1()))){
+                        // Ada constraint yang membatasi dosen pada partikel yang dipilih
+//                        System.out.println("1. Constraint "+constraint.getId()+" membatasi dosen "+matakuliah.getDosen1()+" mengajar sebanyak "+constraint.getMax_bekerja());
+                        jumlahMengajar += dosenMengajarPadaHari(Integer.parseInt(matakuliah.getDosen1()), hari);
+//                        System.out.println("Jumlah dosen "+matakuliah.getDosen1()+" mengajar "+jumlahMengajar);
+                    }
+                    if(matakuliah.getDosen2().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen2()))){
+                        // Ada constraint yang membatasi dosen pada partikel yang dipilih
+//                        System.out.println("2. Constraint "+constraint.getId()+" membatasi dosen "+matakuliah.getDosen2()+" mengajar sebanyak "+constraint.getMax_bekerja());
+                        jumlahMengajar += dosenMengajarPadaHari(Integer.parseInt(matakuliah.getDosen2()), hari);
+//                        System.out.println("Jumlah dosen "+matakuliah.getDosen2()+" mengajar "+jumlahMengajar);
+                    }
+                    if(matakuliah.getDosen3().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen3()))){
+                        // Ada constraint yang membatasi dosen pada partikel yang dipilih
+//                        System.out.println("3. Constraint "+constraint.getId()+" membatasi dosen "+matakuliah.getDosen3()+" mengajar sebanyak "+constraint.getMax_bekerja());
+                        jumlahMengajar += dosenMengajarPadaHari(Integer.parseInt(matakuliah.getDosen3()), hari);
+//                        System.out.println("Jumlah dosen "+matakuliah.getDosen3()+" mengajar "+jumlahMengajar);
+                    }
+                    if(matakuliah.getDosen4().length() != 0 && constraint.getId_subjek().equals(Integer.parseInt(matakuliah.getDosen4()))){
+                        // Ada constraint yang membatasi dosen pada partikel yang dipilih
+//                        System.out.println("4. Constraint "+constraint.getId()+" membatasi dosen "+matakuliah.getDosen4()+" mengajar sebanyak "+constraint.getMax_bekerja());
+                        jumlahMengajar += dosenMengajarPadaHari(Integer.parseInt(matakuliah.getDosen4()), hari);
+//                        System.out.println("Jumlah dosen "+matakuliah.getDosen4()+" mengajar "+jumlahMengajar);
+                    }
+                    if(jumlahMengajar > constraint.getMax_bekerja()){
+                        keterangan = percobaan.getKeterangan();
+                        keterangan = keterangan.concat(" "+constraint.getNama_constraints());
+                        percobaan.setKeterangan(keterangan);
+                        pinalti++;
+                    }
+                    System.out.println("Dosen "+constraint.getId_subjek()+" mengajar "+jumlahMengajar+"x. Sehingga pinalti "+pinalti);
+                }
+            }
+        }
+
+        // Perhitungan nilai fitness dan simpan nilai fitness
+        nilaiFitness = (1.0)/(1.0+pinalti);
+        percobaan.setNilaifitness(nilaiFitness);
+
+        if(percobaan.getNilaifitness() == 1){
+            partikel1.setPosisihari(hari);
+            partikel1.setPosisisesi(sesi);
+            partikel1.setPosisiruangan(ruangan);
+            partikel1.setNilaifitness(1);
+            partikel1.setKeterangan("");
+            partikelService.save(partikel1);
+            System.out.println(partikel1.getNama()+" bisa diubah ke hari:"+hari+" sesi:"+sesi+" ruangan:"+ruangan);
+            return;
+        }
+        else if(percobaan.getNilaifitness() > partikel1.getNilaifitness()){
+            partikel1.setPosisihari(hari);
+            partikel1.setPosisisesi(sesi);
+            partikel1.setPosisiruangan(ruangan);
+            partikel1.setNilaifitness(percobaan.getNilaifitness());
+            partikel1.setKeterangan(keterangan);
+            partikelService.save(partikel1);
+        }
+
+        System.out.println(percobaan.getNama()+" Melanggar : "+percobaan.getKeterangan()+" Pelanggaran : "+pinalti);
     }
 }

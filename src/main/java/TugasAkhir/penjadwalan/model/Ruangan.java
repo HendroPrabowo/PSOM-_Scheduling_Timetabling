@@ -12,6 +12,7 @@ public class Ruangan {
     private Integer id;
     private String nama;
     private Integer kapasitas;
+    private String jenis;
     private Integer posisi;
 
     public Integer getId() {
@@ -32,6 +33,14 @@ public class Ruangan {
 
     public Integer getKapasitas() {
         return kapasitas;
+    }
+
+    public String getJenis() {
+        return jenis;
+    }
+
+    public void setJenis(String jenis) {
+        this.jenis = jenis;
     }
 
     public void setKapasitas(Integer kapasitas) {

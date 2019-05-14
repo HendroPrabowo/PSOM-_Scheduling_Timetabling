@@ -46,7 +46,7 @@
                         <select id="dosen1" name="dosen1" class="custom-select">
                             <option value="">Pilih Satu...</option>
                             <c:forEach var="dosen" items="${dosens}">
-                                <option value="${dosen.id}">${dosen.nama}</option>
+                                <option value="${dosen.id}">${dosen.inisial}</option>
                             </c:forEach>
                         </select>
                     </div>
@@ -55,7 +55,7 @@
                         <select id="dosen2" name="dosen2" class="custom-select">
                             <option value="">Pilih Satu...</option>
                             <c:forEach var="dosen" items="${dosens}">
-                                <option value="${dosen.id}">${dosen.nama}</option>
+                                <option value="${dosen.id}">${dosen.inisial}</option>
                             </c:forEach>
                         </select>
                     </div>
@@ -64,7 +64,7 @@
                         <select id="dosen3" name="dosen3" class="custom-select">
                             <option value="">Pilih Satu...</option>
                             <c:forEach var="dosen" items="${dosens}">
-                                <option value="${dosen.id}">${dosen.nama}</option>
+                                <option value="${dosen.id}">${dosen.inisial}</option>
                             </c:forEach>
                         </select>
                     </div>
@@ -73,7 +73,7 @@
                         <select id="dosen4" name="dosen4" class="custom-select">
                             <option value="">Pilih Satu...</option>
                             <c:forEach var="dosen" items="${dosens}">
-                                <option value="${dosen.id}">${dosen.nama}</option>
+                                <option value="${dosen.id}">${dosen.inisial}</option>
                             </c:forEach>
                         </select>
                     </div>
@@ -89,6 +89,43 @@
                     <div class="form-group">
                         <label for="asistendosen3">Asisten Dosen 3</label>
                         <input type="text" class="form-control" id="asistendosen3" name="asistendosen3">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Kelas 1</label>
+                        <select name="kelas1" class="custom-select">
+                            <option value="">Pilih Satu...</option>
+                            <c:forEach var="value" items="${kelas}">
+                                <option value="${value.id}">${value.inisial}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kelas 2</label>
+                        <select name="kelas2" class="custom-select">
+                            <option value="">Pilih Satu...</option>
+                            <c:forEach var="value" items="${kelas}">
+                                <option value="${value.id}">${value.inisial}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kelas 3</label>
+                        <select name="kelas3" class="custom-select">
+                            <option value="">Pilih Satu...</option>
+                            <c:forEach var="value" items="${kelas}">
+                                <option value="${value.id}">${value.inisial}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kelas 4</label>
+                        <select name="kelas4" class="custom-select">
+                            <option value="">Pilih Satu...</option>
+                            <c:forEach var="value" items="${kelas}">
+                                <option value="${value.id}">${value.inisial}</option>
+                            </c:forEach>
+                        </select>
                     </div>
 
                     <input type="submit" class="btn btn-success" value="Simpan">

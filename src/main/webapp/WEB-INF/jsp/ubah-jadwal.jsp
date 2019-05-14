@@ -1,14 +1,12 @@
-<%@ page import="TugasAkhir.penjadwalan.model.Partikel" %>
 <%@ page import="java.util.List" %>
-<%@ page import="TugasAkhir.penjadwalan.model.Ruangan" %>
-<%@ page import="TugasAkhir.penjadwalan.model.Matakuliah" %>
-<%@ page import="TugasAkhir.penjadwalan.model.Dosen" %>
+<%@ page import="TugasAkhir.penjadwalan.model.*" %>
 <%@ include file="common/header.jspf"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <% Integer i = 1; %>
 <% List<Ruangan> ruangans = (List<Ruangan>)pageContext.findAttribute("ruangans"); %>
 <% List<Matakuliah> matakuliahs = (List<Matakuliah>)pageContext.findAttribute("matakuliahs"); %>
 <% List<Dosen> dosens = (List<Dosen>)pageContext.findAttribute("dosens"); %>
+<% List<Kelas> kelass = (List<Kelas>) pageContext.findAttribute("kelass"); %>
 
 <style>
     .table td {
@@ -45,10 +43,10 @@
                                 <th>Asdos 1</th>
                                 <th>Asdos 2</th>
                                 <th>Asdos 3</th>
-                                <%--<th>Kelas 1</th>--%>
-                                <%--<th>Kelas 2</th>--%>
-                                <%--<th>Kelas 3</th>--%>
-                                <%--<th>Kelas 4</th>--%>
+                                <th>Kelas 1</th>
+                                <th>Kelas 2</th>
+                                <th>Kelas 3</th>
+                                <th>Kelas 4</th>
                                 <th>Jenis</th>
                                 <th>Nilai Fitness</th>
                                 <th>Keterangan</th>
@@ -56,174 +54,186 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <c:forEach var="partikel" items="${partikels}">
-                                <tr>
-                                    <td>
-                                        <%
-                                            out.print(i);
-                                            i++;
-                                        %>
-                                    </td>
-                                    <td>${partikel.id}</td>
-                                    <td>
-                                        <%
-                                            Partikel partikel = (Partikel)pageContext.findAttribute("partikel");
-                                            for(Matakuliah matakuliah : matakuliahs){
-                                                if(partikel.getIdmatakuliah().equals(matakuliah.getId())){
-                                                    out.print(matakuliah.getInisial());
-                                                }
+                        <c:forEach var="partikel" items="${partikels}">
+                            <tr>
+                                <td>
+                                    <%
+                                        out.print(i);
+                                        i++;
+                                    %>
+                                </td>
+                                <td>${partikel.id}</td>
+                                <td>
+                                    <%
+                                        Partikel partikel = (Partikel)pageContext.findAttribute("partikel");
+                                        for(Matakuliah matakuliah : matakuliahs){
+                                            if(partikel.getIdmatakuliah().equals(matakuliah.getId())){
+                                                out.print(matakuliah.getInisial());
                                             }
-                                        %>
-                                    </td>
-                                    <td>
-                                        <%
-                                            Integer hari = (int)partikel.getPosisihari();
-                                            if(hari == 1){
-                                                out.print("Senin");
-                                            }else if(hari == 2){
-                                                out.print("Selasa");
-                                            }else if(hari == 3){
-                                                out.print("Rabu");
-                                            }else if(hari == 4){
-                                                out.print("Kamis");
-                                            }else{
-                                                out.print("Jumat");
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%
+                                        Integer hari = (int)partikel.getPosisihari();
+                                        if(hari == 1){
+                                            out.print("Senin");
+                                        }else if(hari == 2){
+                                            out.print("Selasa");
+                                        }else if(hari == 3){
+                                            out.print("Rabu");
+                                        }else if(hari == 4){
+                                            out.print("Kamis");
+                                        }else{
+                                            out.print("Jumat");
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%
+                                        Integer sesi = (int)partikel.getPosisisesi();
+                                        if(sesi == 1){
+                                            out.print("08:00 - 08:50");
+                                        }else if(sesi == 2){
+                                            out.print("09:00 - 09:50");
+                                        }else if(sesi == 3){
+                                            out.print("10:00 - 10:50");
+                                        }else if(sesi == 4){
+                                            out.print("11:00 - 11:50");
+                                        }else if(sesi == 5){
+                                            out.print("13:00 - 13:50");
+                                        }else if(sesi == 6){
+                                            out.print("14:00 - 14:50");
+                                        }else if(sesi == 7){
+                                            out.print("15:00 - 15:50");
+                                        }else{
+                                            out.print("16:00 - 16:50");
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%
+                                        Integer ruangan = (int)partikel.getPosisiruangan();
+                                        for(Ruangan kelas : ruangans){
+                                            if(ruangan == kelas.getPosisi()){
+                                                out.print(kelas.getNama());
                                             }
-                                        %>
-                                    </td>
-                                    <td>
-                                        <%
-                                            Integer sesi = (int)partikel.getPosisisesi();
-                                            if(sesi == 1){
-                                                out.print("08:00 - 08:50");
-                                            }else if(sesi == 2){
-                                                out.print("09:00 - 09:50");
-                                            }else if(sesi == 3){
-                                                out.print("10:00 - 10:50");
-                                            }else if(sesi == 4){
-                                                out.print("11:00 - 11:50");
-                                            }else if(sesi == 5){
-                                                out.print("13:00 - 13:50");
-                                            }else if(sesi == 6){
-                                                out.print("14:00 - 14:50");
-                                            }else if(sesi == 7){
-                                                out.print("15:00 - 15:50");
-                                            }else{
-                                                out.print("16:00 - 16:50");
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%
+                                        Integer idMatakuliah = partikel.getIdmatakuliah();
+                                        Matakuliah matakuliah = new Matakuliah();
+                                        for(Matakuliah item : matakuliahs){
+                                            if(item.getId().equals(idMatakuliah)){
+                                                matakuliah = item;
                                             }
-                                        %>
-                                    </td>
-                                    <td>
-                                        <%
-                                            Integer ruangan = (int)partikel.getPosisiruangan();
-                                            for(Ruangan kelas : ruangans){
-                                                if(ruangan == kelas.getPosisi()){
-                                                    out.print(kelas.getNama());
-                                                }
-                                            }
-                                        %>
-                                    </td>
-                                    <td>
-                                        <%
-                                            Integer idMatakuliah = partikel.getIdmatakuliah();
-                                            Integer idDosen1 = 0;
-                                            for(Matakuliah matakuliah : matakuliahs){
-                                                if(matakuliah.getId().equals(idMatakuliah)){
-                                                    idDosen1 = Integer.parseInt(matakuliah.getDosen1());
+                                        }
+                                        if(matakuliah.getDosen1().length() != 0){
+                                            for(Dosen dosen : dosens){
+                                                if(dosen.getId().equals(Integer.parseInt(matakuliah.getDosen1()))){
+                                                    out.print(dosen.getNama());
                                                     break;
                                                 }
                                             }
-                                            if(idDosen1 != 0){
-                                                for(Dosen dosen : dosens){
-                                                    if(dosen.getId().equals(idDosen1)){
-                                                        out.print(dosen.getNama());
-                                                        break;
-                                                    }
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%
+                                        if(matakuliah.getDosen2().length() != 0){
+                                            for(Dosen dosen : dosens){
+                                                if(dosen.getId().equals(Integer.parseInt(matakuliah.getDosen2()))){
+                                                    out.print(dosen.getNama());
+                                                    break;
                                                 }
                                             }
-                                        %>
-                                    </td>
-                                    <td>
-                                        <%
-                                            Integer idDosen2 = 0;
-                                            for(Matakuliah matakuliah : matakuliahs){
-                                                if(matakuliah.getId().equals(idMatakuliah)){
-                                                    if(matakuliah.getDosen2().length() != 0){
-                                                        idDosen2 = Integer.parseInt(matakuliah.getDosen2());
-                                                        break;
-                                                    }
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%
+                                        if(matakuliah.getDosen3().length() != 0){
+                                            for(Dosen dosen : dosens){
+                                                if(dosen.getId().equals(Integer.parseInt(matakuliah.getDosen3()))){
+                                                    out.print(dosen.getNama());
+                                                    break;
                                                 }
                                             }
-                                            if(idDosen2 != 0){
-                                                for(Dosen dosen : dosens){
-                                                    if(dosen.getId().equals(idDosen2)){
-                                                        out.print(dosen.getNama());
-                                                        break;
-                                                    }
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%
+                                        if(matakuliah.getDosen4().length() != 0){
+                                            for(Dosen dosen : dosens){
+                                                if(dosen.getId().equals(Integer.parseInt(matakuliah.getDosen4()))){
+                                                    out.print(dosen.getNama());
+                                                    break;
                                                 }
                                             }
-                                        %>
-                                    </td>
-                                    <td>
-                                        <%
-                                            Integer idDosen3 = 0;
-                                            for(Matakuliah matakuliah : matakuliahs){
-                                                if(matakuliah.getId().equals(idMatakuliah)){
-                                                    if(matakuliah.getDosen3().length() != 0){
-                                                        idDosen3 = Integer.parseInt(matakuliah.getDosen3());
-                                                        break;
-                                                    }
+                                        }
+                                    %>
+                                </td>
+                                <td><% out.print(matakuliah.getAsistendosen1()); %></td>
+                                <td><% out.print(matakuliah.getAsistendosen2()); %></td>
+                                <td><% out.print(matakuliah.getAsistendosen3()); %></td>
+                                <td>
+                                    <%
+                                        if(matakuliah.getKelas1().length() != 0){
+                                            for(Kelas kelas : kelass){
+                                                if(kelas.getId().equals(Integer.parseInt(matakuliah.getKelas1()))){
+                                                    out.print(kelas.getInisial());
                                                 }
                                             }
-                                            if(idDosen3 != 0){
-                                                for(Dosen dosen : dosens){
-                                                    if(dosen.getId().equals(idDosen3)){
-                                                        out.print(dosen.getNama());
-                                                        break;
-                                                    }
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%
+                                        if(matakuliah.getKelas2().length() != 0){
+                                            for(Kelas kelas : kelass){
+                                                if(kelas.getId().equals(Integer.parseInt(matakuliah.getKelas2()))){
+                                                    out.print(kelas.getInisial());
                                                 }
                                             }
-                                        %>
-                                    </td>
-                                    <td>
-                                        <%
-                                            Integer idDosen4 = 0;
-                                            for(Matakuliah matakuliah : matakuliahs){
-                                                if(matakuliah.getId().equals(idMatakuliah)){
-                                                    if(matakuliah.getDosen4().length() != 0){
-                                                        idDosen4 = Integer.parseInt(matakuliah.getDosen4());
-                                                        break;
-                                                    }
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%
+                                        if(matakuliah.getKelas3().length() != 0){
+                                            for(Kelas kelas : kelass){
+                                                if(kelas.getId().equals(Integer.parseInt(matakuliah.getKelas3()))){
+                                                    out.print(kelas.getInisial());
                                                 }
                                             }
-                                            if(idDosen4 != 0){
-                                                for(Dosen dosen : dosens){
-                                                    if(dosen.getId().equals(idDosen4)){
-                                                        out.print(dosen.getNama());
-                                                        break;
-                                                    }
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%
+                                        if(matakuliah.getKelas4().length() != 0){
+                                            for(Kelas kelas : kelass){
+                                                if(kelas.getId().equals(Integer.parseInt(matakuliah.getKelas4()))){
+                                                    out.print(kelas.getInisial());
                                                 }
                                             }
-                                        %>
-                                    </td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <%--<td></td>--%>
-                                    <%--<td></td>--%>
-                                    <%--<td></td>--%>
-                                    <%--<td></td>--%>
-                                    <td></td>
-                                    <td>${partikel.nilaifitness}</td>
-                                    <td>${partikel.keterangan}</td>
-                                    <td>
-                                        <form method="post">
-                                            <input type="hidden" name="id" value="${partikel.id}">
-                                            <button type="submit" class="btn btn-danger btn-sm">Pindahkan</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            </c:forEach>
+                                        }
+                                    %>
+                                </td>
+                                <td><% out.print(matakuliah.getJenis()); %></td>
+                                <td>${partikel.nilaifitness}</td>
+                                <td>${partikel.keterangan}</td>
+                                <td>
+                                    <form method="post">
+                                        <input type="hidden" name="id" value="${partikel.id}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Pindahkan</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </c:forEach>
                         </tbody>
                     </table>
                 </div>

@@ -13,9 +13,17 @@
                     <input type="text" class="form-control" id="nama" name="nama">
                 </div>
                 <div class="form-group">
+                    <label for="jenis">Jenis</label>
+                    <select name="jenis" id="jenis" class="form-control">
+                        <option value="T" selected>Teori</option>
+                        <option value="P">Praktikum</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="kapasitas">Kapasitas</label>
                     <input type="text" class="form-control" id="kapasitas" name="kapasitas">
                 </div>
+
                 <input type="submit" class="btn btn-success" value="Simpan">
             </form>
         </div>
