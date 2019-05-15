@@ -75,4 +75,17 @@ public class PartikelService {
 
         return partikelsByHari;
     }
+
+    public List<Partikel> findPartikelByHariSesi(int hari, int sesi){
+        List<Partikel> partikels = new ArrayList<>();
+
+        List<Partikel> all_partikel = findAll();
+        for(Partikel partikel : all_partikel){
+            if((int)partikel.getPosisihari() == hari && (int)partikel.getPosisisesi() == sesi){
+                partikels.add(partikel);
+            }
+        }
+
+        return partikels;
+    }
 }

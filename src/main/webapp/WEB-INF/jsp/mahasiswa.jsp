@@ -24,6 +24,7 @@
                 <thead>
                 <tr>
                     <th>#</th>
+                    <th>Id</th>
                     <th>NIM</th>
                     <th>Nama</th>
                     <th>Kelas</th>
@@ -40,6 +41,7 @@
                                 i++;
                             %>
                         </td>
+                        <td>${mahasiswa.id}</td>
                         <td>${mahasiswa.nim}</td>
                         <td>${mahasiswa.nama}</td>
                         <td>${mahasiswa.kelas}</td>

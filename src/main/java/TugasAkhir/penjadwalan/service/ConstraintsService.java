@@ -44,4 +44,17 @@ public class ConstraintsService {
 
         return constraints_max_bekerja_hari;
     }
+
+    public List<Constraints> getConstraintsLarangan(){
+        List<Constraints> constraints = findAll();
+        List<Constraints> constraints_larangan = new ArrayList<>();
+
+        for(Constraints constraint : constraints){
+            if(constraint.getTipe().equals(2)){
+                constraints_larangan.add(constraint);
+            }
+        }
+
+        return constraints_larangan;
+    }
 }

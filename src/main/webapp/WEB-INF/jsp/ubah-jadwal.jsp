@@ -133,7 +133,7 @@
                                         if(matakuliah.getDosen1().length() != 0){
                                             for(Dosen dosen : dosens){
                                                 if(dosen.getId().equals(Integer.parseInt(matakuliah.getDosen1()))){
-                                                    out.print(dosen.getNama());
+                                                    out.print(dosen.getInisial());
                                                     break;
                                                 }
                                             }
@@ -145,7 +145,7 @@
                                         if(matakuliah.getDosen2().length() != 0){
                                             for(Dosen dosen : dosens){
                                                 if(dosen.getId().equals(Integer.parseInt(matakuliah.getDosen2()))){
-                                                    out.print(dosen.getNama());
+                                                    out.print(dosen.getInisial());
                                                     break;
                                                 }
                                             }
@@ -157,7 +157,7 @@
                                         if(matakuliah.getDosen3().length() != 0){
                                             for(Dosen dosen : dosens){
                                                 if(dosen.getId().equals(Integer.parseInt(matakuliah.getDosen3()))){
-                                                    out.print(dosen.getNama());
+                                                    out.print(dosen.getInisial());
                                                     break;
                                                 }
                                             }
@@ -169,7 +169,7 @@
                                         if(matakuliah.getDosen4().length() != 0){
                                             for(Dosen dosen : dosens){
                                                 if(dosen.getId().equals(Integer.parseInt(matakuliah.getDosen4()))){
-                                                    out.print(dosen.getNama());
+                                                    out.print(dosen.getInisial());
                                                     break;
                                                 }
                                             }

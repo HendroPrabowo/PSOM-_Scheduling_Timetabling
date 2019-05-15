@@ -1,16 +1,10 @@
 package TugasAkhir.penjadwalan.spreadsheet;
 
-import TugasAkhir.penjadwalan.model.Matakuliah;
-import TugasAkhir.penjadwalan.model.Partikel;
-import TugasAkhir.penjadwalan.model.Ruangan;
-import TugasAkhir.penjadwalan.service.MatakuliahService;
-import TugasAkhir.penjadwalan.service.RuanganService;
+import TugasAkhir.penjadwalan.model.*;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -24,7 +18,13 @@ public class ApachePOIExcelWrite {
 
     }
 
-    public void exportExcel(List<Partikel> partikels, List<Matakuliah> matakuliahs, List<Ruangan> ruangans){
+    public void exportExcel(List<Partikel> partikels, List<Matakuliah> matakuliahs, List<Ruangan> ruangans, List<Dosen> dosens, List<Kelas> kelass){
+
+        System.out.println("Setelah di sort");
+        for(Partikel partikel : partikels){
+            System.out.println(partikel.getNama()+" "+partikel.getPosisihari()+" "+partikel.getPosisisesi()+" "+partikel.getPosisiruangan());
+        }
+
         String FILE_NAME = "myExcel.xlsx";
 
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -32,6 +32,7 @@ public class ApachePOIExcelWrite {
 
         List<String> header = new ArrayList<>();
         header.add("ID Partikel");
+        header.add("Inisial");
         header.add("Mata Kuliah");
         header.add("Hari");
         header.add("Waktu");
@@ -69,7 +70,8 @@ public class ApachePOIExcelWrite {
             Matakuliah matakuliah = findMatakuliah(partikel.getIdmatakuliah(), matakuliahs);
 
             row.createCell(0).setCellValue(partikel.getId());
-            row.createCell(1).setCellValue(matakuliah.getNama());
+            row.createCell(1).setCellValue(matakuliah.getInisial());
+            row.createCell(2).setCellValue(matakuliah.getNama());
 
             // Set nama hari
             String hari = new String();
@@ -83,7 +85,7 @@ public class ApachePOIExcelWrite {
                 hari = "Kamis";
             else
                 hari = "Jumat";
-            row.createCell(2).setCellValue(hari);
+            row.createCell(3).setCellValue(hari);
 
             // Set nama waktu
             String sesi = new String();
@@ -103,24 +105,65 @@ public class ApachePOIExcelWrite {
                 sesi = "15:00 - 15:50";
             else
                 sesi = "16:00 - 16:50";
-            row.createCell(3).setCellValue(sesi);
+            row.createCell(4).setCellValue(sesi);
 
             String ruangan = findRuanganByPosisi((int)partikel.getPosisiruangan(), ruangans).getNama();
-            row.createCell(4).setCellValue(ruangan);
-            row.createCell(5).setCellValue(matakuliah.getDosen1());
-            row.createCell(6).setCellValue(matakuliah.getDosen2());
-            row.createCell(7).setCellValue(matakuliah.getDosen3());
-            row.createCell(8).setCellValue(matakuliah.getDosen4());
-            row.createCell(9).setCellValue(matakuliah.getAsistendosen1());
-            row.createCell(10).setCellValue(matakuliah.getAsistendosen2());
-            row.createCell(11).setCellValue(matakuliah.getAsistendosen3());
-            row.createCell(12).setCellValue(matakuliah.getKelas1());
-            row.createCell(13).setCellValue(matakuliah.getKelas2());
-            row.createCell(14).setCellValue(matakuliah.getKelas3());
-            row.createCell(15).setCellValue(matakuliah.getKelas4());
-            row.createCell(16).setCellValue(matakuliah.getJenis());
-            row.createCell(17).setCellValue(partikel.getNilaifitness());
-            row.createCell(18).setCellValue(partikel.getKeterangan());
+            row.createCell(5).setCellValue(ruangan);
+
+            String dosen1 = "";
+            if(matakuliah.getDosen1().length() != 0){
+                dosen1 = findDosen(Integer.parseInt(matakuliah.getDosen1()), dosens);
+            }
+            row.createCell(6).setCellValue(dosen1);
+
+            String dosen2 = "";
+            if(matakuliah.getDosen2().length() != 0){
+                dosen2 = findDosen(Integer.parseInt(matakuliah.getDosen2()), dosens);
+            }
+            row.createCell(7).setCellValue(dosen2);
+
+            String dosen3 = "";
+            if(matakuliah.getDosen3().length() != 0){
+                dosen3 = findDosen(Integer.parseInt(matakuliah.getDosen3()), dosens);
+            }
+            row.createCell(8).setCellValue(dosen3);
+
+            String dosen4 = "";
+            if(matakuliah.getDosen4().length() != 0){
+                dosen4 = findDosen(Integer.parseInt(matakuliah.getDosen4()), dosens);
+            }
+            row.createCell(9).setCellValue(dosen4);
+
+            row.createCell(10).setCellValue(matakuliah.getAsistendosen1());
+            row.createCell(11).setCellValue(matakuliah.getAsistendosen2());
+            row.createCell(12).setCellValue(matakuliah.getAsistendosen3());
+
+            String kelas1 = "";
+            if(matakuliah.getKelas1().length() != 0){
+                kelas1 = findKelas(Integer.parseInt(matakuliah.getKelas1()), kelass);
+            }
+            row.createCell(13).setCellValue(kelas1);
+
+            String kelas2 = "";
+            if(matakuliah.getKelas2().length() != 0){
+                kelas2 = findKelas(Integer.parseInt(matakuliah.getKelas2()), kelass);
+            }
+            row.createCell(14).setCellValue(kelas2);
+
+            String kelas3 = "";
+            if(matakuliah.getKelas3().length() != 0){
+                kelas3 = findKelas(Integer.parseInt(matakuliah.getKelas3()), kelass);
+            }
+            row.createCell(15).setCellValue(kelas3);
+
+            String kelas4 = "";
+            if(matakuliah.getKelas4().length() != 0){
+                kelas4 = findKelas(Integer.parseInt(matakuliah.getKelas4()), kelass);
+            }
+            row.createCell(16).setCellValue(kelas4);
+            row.createCell(17).setCellValue(matakuliah.getJenis());
+            row.createCell(18).setCellValue(partikel.getNilaifitness());
+            row.createCell(19).setCellValue(partikel.getKeterangan());
             rowNum++;
         }
         System.out.println("Creating excel");
@@ -151,6 +194,24 @@ public class ApachePOIExcelWrite {
         for (Ruangan ruangan : ruangans){
             if(ruangan.getPosisi().equals(posisi)){
                 return ruangan;
+            }
+        }
+        return null;
+    }
+
+    public String findDosen(int idDosen, List<Dosen> dosens){
+        for(Dosen dosen : dosens){
+            if(dosen.getId().equals(idDosen)){
+                return dosen.getInisial();
+            }
+        }
+        return null;
+    }
+
+    public String findKelas(int id_kelas, List<Kelas> kelass){
+        for(Kelas kelas : kelass){
+            if(kelas.getId().equals(id_kelas)){
+                return kelas.getInisial();
             }
         }
         return null;
