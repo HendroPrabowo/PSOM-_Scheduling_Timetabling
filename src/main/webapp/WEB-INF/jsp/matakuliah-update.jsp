@@ -2,7 +2,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Update Mata Kuliah</h1>
+        <h1 class="text-center">Update Mata Kuliah</h1>
     </div>
 
     <div class="row">
@@ -20,34 +20,62 @@
 
                 <div class="form-group">
                     <label for="program">Program</label>
-                    <input type="text" class="form-control" id="program" name="program" value="${matakuliah.program}">
+                    <select id="program" class="custom-select" name="program" required>
+                        <option value="Sarjana" selected>Sarjana</option>
+                        <option value="Diploma">Diploma</option>
+                    </select>
                 </div>
+
                 <div class="form-group">
                     <label for="jenis">Jenis</label>
-                    <input type="text" class="form-control" id="jenis" name="jenis" value="${matakuliah.jenis}">
+                    <select id="jenis" class="custom-select" name="jenis" required>
+                        <option value="T" selected>Teori</option>
+                        <option value="P">Praktikum</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label for="jumlahsks">Jumlah SKS</label>
-                    <input type="text" class="form-control" id="jumlahsks" name="jumlahsks" value="${matakuliah.jumlahsks}">
-                </div>
-                <div class="form-group">
-                    <label for="dosen1">Dosen 1</label>
-                    <input type="text" class="form-control" id="dosen1" name="dosen1" value="${matakuliah.dosen1}">
-                </div>
-                <div class="form-group">
-                    <label for="dosen2">Dosen 2</label>
-                    <input type="text" class="form-control" id="dosen2" name="dosen2" value="${matakuliah.dosen2}">
-                </div>
-                <div class="form-group">
-                    <label for="dosen3">Dosen 3</label>
-                    <input type="text" class="form-control" id="dosen3" name="dosen3" value="${matakuliah.dosen3}">
+                    <input type="number" class="form-control" id="jumlahsks" name="jumlahsks" value="${matakuliah.jumlahsks}" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="dosen4">Dosen 4</label>
-                    <input type="text" class="form-control" id="dosen4" name="dosen4" value="${matakuliah.dosen4}">
+                    <label for="dosen1">Dosen 1</label>
+                    <select id="dosen1" name="dosen1" class="custom-select">
+                        <option value="">Pilih Satu...</option>
+                        <c:forEach var="dosen" items="${dosens}">
+                            <option value="${dosen.id}">${dosen.inisial}</option>
+                        </c:forEach>
+                    </select>
                 </div>
+                <div class="form-group">
+                    <label for="dosen2">Dosen 2</label>
+                    <select id="dosen2" name="dosen2" class="custom-select">
+                        <option value="">Pilih Satu...</option>
+                        <c:forEach var="dosen" items="${dosens}">
+                            <option value="${dosen.id}">${dosen.inisial}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dosen3">Dosen 3</label>
+                    <select id="dosen3" name="dosen3" class="custom-select">
+                        <option value="">Pilih Satu...</option>
+                        <c:forEach var="dosen" items="${dosens}">
+                            <option value="${dosen.id}">${dosen.inisial}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dosen4">Dosen 4</label>
+                    <select id="dosen4" name="dosen4" class="custom-select">
+                        <option value="">Pilih Satu...</option>
+                        <c:forEach var="dosen" items="${dosens}">
+                            <option value="${dosen.id}">${dosen.inisial}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label for="asistendosen1">Asisten Dosen 1</label>
                     <input type="text" class="form-control" id="asistendosen1" name="asistendosen1" value="${matakuliah.asistendosen1}">
@@ -62,22 +90,42 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="kelas1">Kelas 1</label>
-                    <input type="text" class="form-control" id="kelas1" name="kelas1" value="${matakuliah.kelas1}">
+                    <label>Kelas 1</label>
+                    <select name="kelas1" class="custom-select">
+                        <option value="">Pilih Satu...</option>
+                        <c:forEach var="value" items="${kelas}">
+                            <option value="${value.id}">${value.inisial}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kelas 2</label>
+                    <select name="kelas2" class="custom-select">
+                        <option value="">Pilih Satu...</option>
+                        <c:forEach var="value" items="${kelas}">
+                            <option value="${value.id}">${value.inisial}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kelas 3</label>
+                    <select name="kelas3" class="custom-select">
+                        <option value="">Pilih Satu...</option>
+                        <c:forEach var="value" items="${kelas}">
+                            <option value="${value.id}">${value.inisial}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kelas 4</label>
+                    <select name="kelas4" class="custom-select">
+                        <option value="">Pilih Satu...</option>
+                        <c:forEach var="value" items="${kelas}">
+                            <option value="${value.id}">${value.inisial}</option>
+                        </c:forEach>
+                    </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="kelas2">Kelas 2</label>
-                    <input type="text" class="form-control" id="kelas2" name="kelas2" value="${matakuliah.kelas2}">
-                </div>
-                <div class="form-group">
-                    <label for="kelas3">Kelas 3</label>
-                    <input type="text" class="form-control" id="kelas3" name="kelas3" value="${matakuliah.kelas3}">
-                </div>
-                <div class="form-group">
-                    <label for="kelas4">Kelas 4</label>
-                    <input type="text" class="form-control" id="kelas4" name="kelas4" value="${matakuliah.kelas4}">
-                </div>
                 <div class="form-group">
                     <label for="jumlahrombongankelas">Jumlah Rombongan Kelas</label>
                     <input type="text" class="form-control" id="jumlahrombongankelas" name="jumlahrombongankelas" value="${matakuliah.jumlahrombongankelas}">

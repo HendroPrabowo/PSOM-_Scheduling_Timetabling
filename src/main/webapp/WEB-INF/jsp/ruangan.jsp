@@ -5,13 +5,15 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Ruangan</h1>
+        <h1 class="text-center">Ruangan</h1>
     </div>
 
     <div class="row">
-        <div class="col-md-4"></div>
-        <div class="col-md-4"><a href="/ruangan-add" class="btn btn-primary" style="margin-bottom: 10px">Tambah Ruangan</a></div>
-        <div class="col-md-4"></div>
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            <a href="/ruangan-add" class="btn btn-primary" style="margin-bottom: 10px">Tambah Ruangan</a>
+        </div>
+        <div class="col-md-3"></div>
     </div>
 
     <div class="row">

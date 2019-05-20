@@ -238,6 +238,17 @@ public class MainController {
         Matakuliah matakuliah = matakuliahService.findOne(id);
         model.put("matakuliah", matakuliah);
 
+        List<Dosen> dosens = new ArrayList<>();
+        List<Kelas> kelas = new ArrayList<>();
+
+        dosens = dosenService.findAll();
+        kelas = kelasService.findAll();
+
+        Collections.sort(dosens, new SortByNama());
+
+        model.put("dosens", dosens);
+        model.put("kelas", kelas);
+
         return "matakuliah-update";
     }
 
@@ -370,6 +381,7 @@ public class MainController {
         }
         List<Ruangan> ruangans = ruanganService.findAll();
         List<Matakuliah> matakuliahs = matakuliahService.findAll();
+
         List<Dosen> dosens = dosenService.findAll();
         List<Kelas> kelass = kelasService.findAll();
 
@@ -717,6 +729,48 @@ public class MainController {
                     pinalti++;
                 }
 
+                /*
+                ============ PENGECEKAN MATAKULIAH BEREBDA DENGA KELAS SAMA TIDAK BISA DIALOKASIKAN DI HARI DAN SESI YANG SAMA
+                 */
+                if(
+                        partikel1.getIdmatakuliah() != partikel2.getIdmatakuliah() &&
+                        Math.floor(partikel1.getPosisihari()) == Math.floor(partikel2.getPosisihari()) &&
+                        Math.floor(partikel1.getPosisisesi()) == Math.floor(partikel2.getPosisisesi())
+                ){
+                    if(matakuliah1.getKelas1().length() != 0){
+                        if(matakuliah1.getKelas1().equals(matakuliah2.getKelas1())){
+                            keterangan = partikel1.getKeterangan();
+                            keterangan = keterangan.concat(" C8:");
+                            partikel1.setKeterangan(keterangan);
+                            partikelService.save(partikel1);
+                            pinalti++;
+                        }
+                        if(matakuliah1.getKelas1().equals(matakuliah2.getKelas2())){
+                            keterangan = partikel1.getKeterangan();
+                            keterangan = keterangan.concat(" C8:");
+                            partikel1.setKeterangan(keterangan);
+                            partikelService.save(partikel1);
+                            pinalti++;
+                        }
+                    }
+                    if(matakuliah1.getKelas2().length() != 0){
+                        if(matakuliah1.getKelas2().equals(matakuliah2.getKelas1())){
+                            keterangan = partikel1.getKeterangan();
+                            keterangan = keterangan.concat(" C8:");
+                            partikel1.setKeterangan(keterangan);
+                            partikelService.save(partikel1);
+                            pinalti++;
+                        }
+                        if(matakuliah1.getKelas2().equals(matakuliah2.getKelas2())){
+                            keterangan = partikel1.getKeterangan();
+                            keterangan = keterangan.concat(" C8:");
+                            partikel1.setKeterangan(keterangan);
+                            partikelService.save(partikel1);
+                            pinalti++;
+                        }
+                    }
+                }
+
 
                 String jenis = matakuliahService.findJenisMatakuliah(partikel1.getIdmatakuliah());
                 //Pengecekan partikel, matakuliah berbeda, hari sesi sama dicek bentrok antar dosen dan asisten dosen
@@ -779,16 +833,16 @@ public class MainController {
                 Ruangan ruang = ruanganService.findByPosisi((int)partikel1.getPosisiruangan());
                 if(ruang.getJenis().equals("T")){
                     keterangan = partikel1.getKeterangan();
-                    keterangan = keterangan.concat(" RP");
+                    keterangan = keterangan.concat(" C7");
                     partikel1.setKeterangan(keterangan);
                     partikelService.save(partikel1);
                     pinalti++;
                 }
             }else{
                 Ruangan ruang = ruanganService.findByPosisi((int)partikel1.getPosisiruangan());
-                if(ruang.getJenis().equals("P")){
+                if(ruang.getJenis().equals("L")){
                     keterangan = partikel1.getKeterangan();
-                    keterangan = keterangan.concat(" RT");
+                    keterangan = keterangan.concat(" C7");
                     partikel1.setKeterangan(keterangan);
                     partikelService.save(partikel1);
                     pinalti++;
@@ -1289,7 +1343,7 @@ public class MainController {
             Ruangan ruang = ruanganService.findByPosisi((int)percobaan.getPosisiruangan());
             if(ruang.getJenis().equals("T")){
                 keterangan = percobaan.getKeterangan();
-                keterangan = keterangan.concat(" RP");
+                keterangan = keterangan.concat(" C7");
                 percobaan.setKeterangan(keterangan);
                 pinalti++;
             }
@@ -1297,7 +1351,7 @@ public class MainController {
             Ruangan ruang = ruanganService.findByPosisi((int)percobaan.getPosisiruangan());
             if(ruang.getJenis().equals("P")){
                 keterangan = percobaan.getKeterangan();
-                keterangan = keterangan.concat(" RT");
+                keterangan = keterangan.concat(" C7");
                 percobaan.setKeterangan(keterangan);
                 pinalti++;
             }
@@ -1350,6 +1404,44 @@ public class MainController {
             String jenis = matakuliahService.findJenisMatakuliah(percobaan.getIdmatakuliah());
             Matakuliah matakuliah1 = matakuliahService.findOne(percobaan.getIdmatakuliah());
             Matakuliah matakuliah2 = matakuliahService.findOne(partikel.getIdmatakuliah());
+
+            /*
+============ PENGECEKAN MATAKULIAH BEREBDA DENGA KELAS SAMA TIDAK BISA DIALOKASIKAN DI HARI DAN SESI YANG SAMA
+ */
+            if(
+                    percobaan.getIdmatakuliah() != partikel.getIdmatakuliah() &&
+                    Math.floor(percobaan.getPosisihari()) == Math.floor(partikel.getPosisihari()) &&
+                    Math.floor(percobaan.getPosisisesi()) == Math.floor(partikel.getPosisisesi())
+            ){
+                if(matakuliah1.getKelas1().length() != 0){
+                    if(matakuliah1.getKelas1().equals(matakuliah2.getKelas1())){
+                        keterangan = percobaan.getKeterangan();
+                        keterangan = keterangan.concat(" C8:");
+                        percobaan.setKeterangan(keterangan);
+                        pinalti++;
+                    }
+                    if(matakuliah1.getKelas1().equals(matakuliah2.getKelas2())){
+                        keterangan = percobaan.getKeterangan();
+                        keterangan = keterangan.concat(" C8:");
+                        percobaan.setKeterangan(keterangan);
+                        pinalti++;
+                    }
+                }
+                if(matakuliah1.getKelas2().length() != 0){
+                    if(matakuliah1.getKelas2().equals(matakuliah2.getKelas1())){
+                        keterangan = percobaan.getKeterangan();
+                        keterangan = keterangan.concat(" C8:");
+                        percobaan.setKeterangan(keterangan);
+                        pinalti++;
+                    }
+                    if(matakuliah1.getKelas2().equals(matakuliah2.getKelas2())){
+                        keterangan = percobaan.getKeterangan();
+                        keterangan = keterangan.concat(" C8:");
+                        percobaan.setKeterangan(keterangan);
+                        pinalti++;
+                    }
+                }
+            }
 
             // Pengecekan partikel, matakuliah yang sama tidak bisa dialokasikan pada hari dan sesi yang sama
             if(
@@ -1576,15 +1668,15 @@ public class MainController {
             Ruangan ruang = ruanganService.findByPosisi((int)percobaan.getPosisiruangan());
             if(ruang.getJenis().equals("T")){
                 keterangan = percobaan.getKeterangan();
-                keterangan = keterangan.concat(" RP");
+                keterangan = keterangan.concat(" C7");
                 percobaan.setKeterangan(keterangan);
                 pinalti++;
             }
         }else{
             Ruangan ruang = ruanganService.findByPosisi((int)percobaan.getPosisiruangan());
-            if(ruang.getJenis().equals("P")){
+            if(ruang.getJenis().equals("L")){
                 keterangan = percobaan.getKeterangan();
-                keterangan = keterangan.concat(" RT");
+                keterangan = keterangan.concat(" C7");
                 percobaan.setKeterangan(keterangan);
                 pinalti++;
             }
@@ -2223,16 +2315,16 @@ public class MainController {
                 Ruangan ruang = ruanganService.findByPosisi((int)partikel1.getPosisiruangan());
                 if(ruang.getJenis().equals("T")){
                     keterangan = partikel1.getKeterangan();
-                    keterangan = keterangan.concat(" RP");
+                    keterangan = keterangan.concat(" C7");
                     partikel1.setKeterangan(keterangan);
                     partikelService.save(partikel1);
                     pinalti++;
                 }
             }else{
                 Ruangan ruang = ruanganService.findByPosisi((int)partikel1.getPosisiruangan());
-                if(ruang.getJenis().equals("P")){
+                if(ruang.getJenis().equals("L")){
                     keterangan = partikel1.getKeterangan();
-                    keterangan = keterangan.concat(" RT");
+                    keterangan = keterangan.concat(" C7");
                     partikel1.setKeterangan(keterangan);
                     partikelService.save(partikel1);
                     pinalti++;
@@ -2538,15 +2630,15 @@ public class MainController {
             Ruangan ruang = ruanganService.findByPosisi((int)percobaan.getPosisiruangan());
             if(ruang.getJenis().equals("T")){
                 keterangan = percobaan.getKeterangan();
-                keterangan = keterangan.concat(" RP");
+                keterangan = keterangan.concat(" C7");
                 percobaan.setKeterangan(keterangan);
                 pinalti++;
             }
         }else{
             Ruangan ruang = ruanganService.findByPosisi((int)percobaan.getPosisiruangan());
-            if(ruang.getJenis().equals("P")){
+            if(ruang.getJenis().equals("L")){
                 keterangan = percobaan.getKeterangan();
-                keterangan = keterangan.concat(" RT");
+                keterangan = keterangan.concat(" C7");
                 percobaan.setKeterangan(keterangan);
                 pinalti++;
             }

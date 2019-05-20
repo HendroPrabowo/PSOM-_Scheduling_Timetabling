@@ -2,7 +2,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Testing Page</h1>
+        <h1 class="text-center">Testing Page</h1>
     </div>
 
     <a href="/testing">Testing</a><br>

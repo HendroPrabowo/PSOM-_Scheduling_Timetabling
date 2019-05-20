@@ -14,7 +14,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Constraints</h1>
+        <h1 class="text-center">Constraints</h1>
     </div>
 
     <div class="row">

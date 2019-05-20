@@ -13,7 +13,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Generate Jadwal</h1>
+        <h1 class="text-center">Generate Jadwal</h1>
     </div>
 
     <h3>Generate Jadwal</h3>

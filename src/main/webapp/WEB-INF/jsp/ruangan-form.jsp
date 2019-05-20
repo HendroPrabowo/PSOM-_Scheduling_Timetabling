@@ -2,7 +2,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Tambah Ruangan</h1>
+        <h1 class="text-center">Tambah Ruangan</h1>
     </div>
 
     <div class="row">

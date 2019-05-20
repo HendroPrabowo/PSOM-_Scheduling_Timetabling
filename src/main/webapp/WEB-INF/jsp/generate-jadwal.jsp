@@ -2,7 +2,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Hasil Generate Jadwal</h1>
+        <h1 class="text-center">Hasil Generate Jadwal</h1>
     </div>
     <h3>Jadwal terbentuk</h3>
     <%--<table class="table table-striped table-bordered col-5">--%>

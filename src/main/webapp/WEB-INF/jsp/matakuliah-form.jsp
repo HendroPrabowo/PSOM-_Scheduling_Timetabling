@@ -3,7 +3,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Tambah Mata Kuliah</h1>
+        <h1 class="text-center">Tambah Mata Kuliah</h1>
     </div>
 
     <div class="container">

@@ -19,7 +19,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Ubah Jadwal</h1>
+        <h1 class="text-center">Ubah Jadwal</h1>
     </div>
 
     <div class="row">

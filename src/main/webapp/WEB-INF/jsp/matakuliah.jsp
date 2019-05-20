@@ -12,7 +12,7 @@
         <div
     class="container-fluid">
     <div class="jumbotron">
-        <h1>Mata Kuliah</h1>
+        <h1 class="text-center">Mata Kuliah</h1>
     </div>
 
     <% Integer i = 1; %>

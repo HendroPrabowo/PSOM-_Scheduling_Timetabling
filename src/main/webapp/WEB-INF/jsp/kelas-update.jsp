@@ -2,7 +2,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Update Kelas</h1>
+        <h1 class="text-center">Update Kelas</h1>
     </div>
 
     <div class="row">

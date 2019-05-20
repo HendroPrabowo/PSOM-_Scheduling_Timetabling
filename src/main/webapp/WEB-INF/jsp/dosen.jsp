@@ -4,7 +4,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Dosen</h1>
+        <h1 class="text-center">Dosen</h1>
     </div>
 
     <div class="row">

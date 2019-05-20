@@ -3,7 +3,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Tambah Constraints</h1>
+        <h1 class="text-center">Tambah Constraints</h1>
     </div>
 
     <div class="form-group">

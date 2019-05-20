@@ -9,7 +9,7 @@
 
 <div class="container-fluid">
     <div class="jumbotron">
-        <h1>Assing Mahasiswa</h1>
+        <h1 class="text-center">Assing Mahasiswa</h1>
     </div>
 
     <div class="row">
