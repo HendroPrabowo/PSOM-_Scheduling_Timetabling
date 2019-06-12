@@ -11,7 +11,7 @@
     <div class="row">
         <div class="col-md-3"></div>
         <div class="col-md-6">
-            <a href="#" class="btn btn-primary" style="margin-bottom: 10px">Tambah Mahasiswa</a>
+            <a href="/tambah-mahasiswa" class="btn btn-primary" style="margin-bottom: 10px">Tambah Mahasiswa</a>
         </div>
         <div class="col-md-3"></div>
     </div>
@@ -47,8 +47,8 @@
                         <td>${mahasiswa.kelas}</td>
                         <td>${mahasiswa.angkatan}</td>
                         <td>
-                            <a href="#" class="btn btn-warning btn-sm">Update</a>
-                            <a href="#" class="btn btn-danger btn-sm">Delete</a>
+                            <a href="/mahasiswa-update?id=${mahasiswa.id}" class="btn btn-warning btn-sm">Update</a>
+                            <a href="/delete-mahasiswa?id=${mahasiswa.id}" class="btn btn-danger btn-sm">Delete</a>
                         </td>
                     </tr>
                 </c:forEach>

@@ -82,27 +82,44 @@
                         </td>
                         <td>
                             <%
-                                Integer sesi = constraint.getSesi();
-                                if(sesi == 1){
-                                    out.print("08:00 - 08:50");
-                                }else if(sesi == 2){
-                                    out.print("09:00 - 09:50");
-                                }else if(sesi == 3){
-                                    out.print("10:00 - 10:50");
-                                }else if(sesi == 4){
-                                    out.print("11:00 - 11:50");
-                                }else if(sesi == 5){
-                                    out.print("13:00 - 13:50");
-                                }else if(sesi == 6){
-                                    out.print("14:00 - 14:50");
-                                }else if(sesi == 7){
-                                    out.print("15:00 - 15:50");
-                                }else{
-                                    out.print("16:00 - 16:50");
+                                if(constraint.getSesi() != null){
+                                    Integer sesi = constraint.getSesi();
+                                    if(sesi == 1){
+                                        out.print("08:00 - 08:50");
+                                    }else if(sesi == 2){
+                                        out.print("09:00 - 09:50");
+                                    }else if(sesi == 3){
+                                        out.print("10:00 - 10:50");
+                                    }else if(sesi == 4){
+                                        out.print("11:00 - 11:50");
+                                    }else if(sesi == 5){
+                                        out.print("13:00 - 13:50");
+                                    }else if(sesi == 6){
+                                        out.print("14:00 - 14:50");
+                                    }else if(sesi == 7){
+                                        out.print("15:00 - 15:50");
+                                    }else{
+                                        out.print("16:00 - 16:50");
+                                    }
+                                }else {
+                                    out.print("-");
                                 }
                             %>
                         </td>
-                        <td>${constraint.max_bekerja}</td>
+                        <td>
+                            <%
+                                if(constraint.getMax_bekerja() != null){
+                                    Integer max_bekerja = constraint.getMax_bekerja();
+                                    if(max_bekerja.equals(0)){
+                                        out.print("-");
+                                    }else {
+                                        out.print(max_bekerja);
+                                    }
+                                }else {
+                                    out.print("-");
+                                }
+                            %>
+                        </td>
                         <td>
                             <form action="/hapus-constraint" method="post">
                                 <input type="hidden" value="${constraint.id}" name="id">

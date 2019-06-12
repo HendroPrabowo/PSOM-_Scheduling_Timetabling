@@ -61,6 +61,7 @@
                 "\t<div class=\"form-group\">\n" +
                 "\t\t<label>Max Bekerja</label>\n" +
                 "\t\t<input class=\"form-control\" type=\"text\" name=\"max_bekerja\" placeholder=\"Jumlah Jam Max Bekerja\" required>\n" +
+                "\t\t<input class=\"form-control\" type=\"text\" name=\"sesi\" value=\"0\">\n" +
                 "\t</div>\n" +
                 "\t<button class=\"btn btn-success\">Save</button>\n" +
                 "</form>");
