@@ -187,9 +187,15 @@ public class MainController {
     public String matakuliahAdd(ModelMap model){
         List<Dosen> dosens = new ArrayList<>();
         List<Kelas> kelas = new ArrayList<>();
+        List<Ruangan> ruangans = new ArrayList<>();
 
         dosens = dosenService.findAll();
         kelas = kelasService.findAll();
+        ruangans = ruanganService.findAll();
+
+        if(dosens.size() == 0 || kelas.size() == 0 || ruangans.size() == 0){
+            return "redirect:/error-page?jenis=2";
+        }
 
         Collections.sort(dosens, new SortByNama());
 
@@ -364,6 +370,11 @@ public class MainController {
     @GetMapping("/ubah-jadwal")
     public String ubahJadwal(ModelMap model){
         List<Partikel> partikels = partikelService.findAll();
+
+        if(partikels.size() == 0){
+            return "redirect:/error-page?jenis=1";
+        }
+
         Collections.sort(partikels, new SortByHari());
         List<Partikel> partikelAlreadySorted = new ArrayList<>();
 
@@ -2960,5 +2971,35 @@ public class MainController {
         mahasiswaService.save(mahasiswa);
 
         return "redirect:/mahasiswa";
+    }
+
+    @GetMapping("/error-page")
+    public String error(ModelMap model, @RequestParam int jenis){
+        String errMsg = "";
+        if(jenis == 1){
+            errMsg = "Belum ada data jadwal";
+        }
+        else if(jenis == 2){
+            List<Dosen> dosens = new ArrayList<>();
+            List<Kelas> kelas = new ArrayList<>();
+            List<Ruangan> ruangans = new ArrayList<>();
+
+            dosens = dosenService.findAll();
+            kelas = kelasService.findAll();
+            ruangans = ruanganService.findAll();
+
+            if(dosens.size() == 0){
+                errMsg = "Belum ada data DOSEN. Silahkan tambah dosen terlebih dahulu";
+            }
+            else if(kelas.size() == 0){
+                errMsg = "Belum ada data KELAS. Silahkah tambah kelas terlebih dahulu";
+            }
+            else if(ruangans.size() == 0){
+                errMsg = "Belum ada data RUANGAN. Silahkan tambah ruangan terlebih dahulu";
+            }
+        }
+
+        model.put("errMsg", errMsg);
+        return "error-page";
     }
 }
