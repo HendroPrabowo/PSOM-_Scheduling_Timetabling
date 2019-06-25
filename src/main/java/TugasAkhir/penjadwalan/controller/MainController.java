@@ -187,13 +187,11 @@ public class MainController {
     public String matakuliahAdd(ModelMap model){
         List<Dosen> dosens = new ArrayList<>();
         List<Kelas> kelas = new ArrayList<>();
-        List<Ruangan> ruangans = new ArrayList<>();
 
         dosens = dosenService.findAll();
         kelas = kelasService.findAll();
-        ruangans = ruanganService.findAll();
 
-        if(dosens.size() == 0 || kelas.size() == 0 || ruangans.size() == 0){
+        if(dosens.size() == 0 || kelas.size() == 0){
             return "redirect:/error-page?jenis=2";
         }
 
@@ -281,6 +279,10 @@ public class MainController {
 
         List<Matakuliah> matakuliahs = matakuliahService.findAll();
         List<Ruangan> ruangans = ruanganService.findAll();
+
+        if(ruangans.size() == 0){
+            return "redirect:/error-page?jenis=3";
+        }
 
         // Hapus dulu smua partikel yang lama
         partikelService.deleteAll();
@@ -2255,6 +2257,10 @@ public class MainController {
         List<Matakuliah> matakuliahs = matakuliahService.findAll();
         List<Ruangan> ruangans = ruanganService.findAll();
 
+        if(ruangans.size() == 0){
+            return "redirect:/error-page?jenis=3";
+        }
+
         // Hapus dulu smua partikel yang lama
         partikelService.deleteAll();
 
@@ -2994,9 +3000,9 @@ public class MainController {
             else if(kelas.size() == 0){
                 errMsg = "Belum ada data KELAS. Silahkah tambah kelas terlebih dahulu";
             }
-            else if(ruangans.size() == 0){
-                errMsg = "Belum ada data RUANGAN. Silahkan tambah ruangan terlebih dahulu";
-            }
+        }
+        else if(jenis == 3){
+            errMsg = "Belum ada data RUANGAN. Silahkan tambah ruangan terlebih dahulu";
         }
 
         model.put("errMsg", errMsg);
