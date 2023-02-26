@@ -1,7 +1,6 @@
 package TugasAkhir.penjadwalan.service;
 
 import TugasAkhir.penjadwalan.model.AssignMahasiswa;
-import TugasAkhir.penjadwalan.model.Mahasiswa;
 import TugasAkhir.penjadwalan.repository.AssignMahasiswaRepository;
 import org.springframework.stereotype.Service;
 
